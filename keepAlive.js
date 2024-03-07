@@ -8,5 +8,5 @@ function keepAlive() {
 }
 
 module.exports = {
-    keepALive
+    keepAlive
 }
