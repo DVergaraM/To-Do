@@ -1,6 +1,6 @@
-const { ActivityType } = require('discord.js');
+const { ActivityType, GatewayIntentBits } = require('discord.js');
 
-function interactionCreate(client) {
+function interactionCreate(client, db) {
     return async interaction => {
         if (!interaction.isCommand()) return;
 
@@ -27,19 +27,28 @@ function interactionCreate(client) {
             interaction.reply(client.ws.ping + 'ms', { ephemeral: true });
         } else if (commandName === 'help') {
             client.application.commands.fetch().then(commands => {
-                let help = commands.map(c => `- /${c.name} - ${c.description} ${"- " + c.options.map(o => o.name).join(' ')}`).join('\n');
+                let options = commands.map(c => c.options);
+                let help = commands.map(c => `- /${c.name} - ${c.description} \`- ${options}\``).join('\n');
                 interaction.reply(`Comandos disponibles:\n${help}`);
             });
         }
     }
 }
 
-function ready(client, db) {
+function convertlocalHourintoUTCHour(hour) {
+    let UTC = hour - 5;
+    if (UTC < 0) {
+        UTC = UTC + 24;
+    }
+    return UTC;
+}
+
+function ready(client, db, config) {
     return () => {
         console.log(`Bot is ready as: ${client.user.tag}`);
         setInterval(() => {
             let date = new Date();
-            let today = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            let today = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}`;
             db.all('SELECT task FROM tasks', (err, rows) => {
                 if (err) {
                     throw err;
@@ -60,14 +69,19 @@ function ready(client, db) {
                     return;
                 }
             });
-            if ((date.getHours() === 9 && date.getMinutes() === 15) || (date.getHours() === 20 && date.getMinutes() === 30)) {
-                db.all('SELECT task FROM tasks WHERE due_date = ?', [today], (err, rows) => {
+            if ((convertlocalHourintoUTCHour(date.getUTCHours()) == config.firstRecordatoryHour && date.getUTCMinutes() === config.firstRecordatoryMinute) || (convertlocalHourintoUTCHour(date.getUTCHours()) === config.secondRecordatoryHour && date.getUTCMinutes() === config.secondRecordatoryMinute)) {
+                db.all('SELECT task, due_date FROM tasks WHERE due_date >= ?', [today], (err, rows) => {
                     if (err) {
                         throw err;
                     }
-                    let tasks = rows.map(r => r.task).join('\n');
+                    let tasks = rows.map(r => {
+                        let dueDate = new Date(r.due_date + 'T00:00:00Z');
+                        dueDate.setHours(dueDate.getHours() + 5)
+                        let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
+                        return `- ${r.task} | <t:${epochTimestamp}:F>`;
+                    }).join('\n');
                     let channel = client.channels.cache.get(config.channelID);
-                    channel.send(`Tienes tareas pendientes para hoy:\n${tasks}`);
+                    channel.send(`<@!551063515084095488> **Tienes ${rows.length} tareas pendientes para hoy:**\n${tasks}`);
                 });
                 db.run('DELETE FROM tasks WHERE due_date < ?', [today], (err) => {
                     if (err) {
@@ -78,8 +92,11 @@ function ready(client, db) {
         }, 60000);
     }
 }
-
+const clientOptions = {
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+}
 module.exports = {
     ready,
-    interactionCreate
+    interactionCreate,
+    clientOptions
 }
