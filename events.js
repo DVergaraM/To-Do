@@ -23,23 +23,18 @@ function interactionCreate(client, db) {
                 let tasks = rows.map(r => `- ${r.task} - ${r.due_date}`).join('\n');
                 interaction.reply(`**Tareas pendientes:**\n${tasks}`);
             });
-        } else if (commandName === 'ping') {
-            interaction.reply(client.ws.ping + 'ms', { ephemeral: true });
-        } else if (commandName === 'help') {
-            client.application.commands.fetch().then(commands => {
-                let options = commands.map(c => c.options);
-                let help = commands.map(c => `- /${c.name} - ${c.description} \`- ${options}\``).join('\n');
-                interaction.reply(`Comandos disponibles:\n${help}`);
-            });
-        }
+        } else if (commandName === 'ping') interaction.reply(client.ws.ping + 'ms', { ephemeral: true });
+        else if (commandName === 'help') client.application.commands.fetch().then(commands => {
+            let options = commands.map(c => c.options);
+            let help = commands.map(c => `- /${c.name} - ${c.description} \`- ${options}\``).join('\n');
+            interaction.reply(`Comandos disponibles:\n${help}`);
+        });
     }
 }
 
 function convertlocalHourintoUTCHour(hour) {
     let UTC = hour - 5;
-    if (UTC < 0) {
-        UTC = UTC + 24;
-    }
+    if (UTC < 0) UTC += 24;
     return UTC;
 }
 
@@ -49,27 +44,26 @@ function ready(client, db, config) {
         setInterval(() => {
             let date = new Date();
             let today = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}`;
+            let utcHours = date.getUTCHours();
+            let utcMinutes = date.getUTCMinutes();
+            let localHour = convertlocalHourintoUTCHour(utcHours);
+
+            let isFirstReminder = localHour === config.firstRecordatoryHour && utcMinutes === config.firstRecordatoryMinute;
+            let isSecondReminder = localHour === config.secondRecordatoryHour && utcMinutes === config.secondRecordatoryMinute;
+
+            let isReminderTime = isFirstReminder || isSecondReminder;
             db.all('SELECT task FROM tasks', (err, rows) => {
                 if (err) {
                     throw err;
                 }
                 let tasks = rows.map(r => r.task);
-                if (tasks.length === 0) {
-                    return;
-                } else if (tasks.length === 1) {
-                    client.user.setActivity('1 tarea pendiente', {
-                        type: ActivityType.Watching
-                    });
-                    return;
-                }
-                else {
-                    client.user.setActivity(`${tasks.length} tareas pendientes`, {
-                        type: ActivityType.Watching
-                    });
-                    return;
-                }
+                if (tasks.length === 0) return;
+                else if (tasks.length === 1) client.user.setActivity('1 tarea pendiente', { type: ActivityType.Watching });
+                else client.user.setActivity(`${tasks.length} tareas pendientes`, {
+                    type: ActivityType.Watching
+                });
             });
-            if ((convertlocalHourintoUTCHour(date.getUTCHours()) == config.firstRecordatoryHour && date.getUTCMinutes() === config.firstRecordatoryMinute) || (convertlocalHourintoUTCHour(date.getUTCHours()) === config.secondRecordatoryHour && date.getUTCMinutes() === config.secondRecordatoryMinute)) {
+            if (isReminderTime) {
                 db.all('SELECT task, due_date FROM tasks WHERE due_date >= ?', [today], (err, rows) => {
                     if (err) {
                         throw err;
@@ -83,11 +77,7 @@ function ready(client, db, config) {
                     let channel = client.channels.cache.get(config.channelID);
                     channel.send(`<@!551063515084095488> **Tienes ${rows.length} tareas pendientes para hoy:**\n${tasks}`);
                 });
-                db.run('DELETE FROM tasks WHERE due_date < ?', [today], (err) => {
-                    if (err) {
-                        throw err;
-                    }
-                });
+                db.run('DELETE FROM tasks WHERE due_date < ?', [today]);
             }
         }, 60000);
     }
