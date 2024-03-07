@@ -4,7 +4,7 @@ const { interactionCreate, ready } = require('./events.js');
 let db = new sqlite3.Database('./tasks.db');
 const config = require('./config.json');
 const { keepAlive } = require('./keepAlive.js')
-keepALive()
+keepAlive()
 
 
 db.run('CREATE TABLE IF NOT EXISTS tasks(task TEXT, due_date TEXT)');
