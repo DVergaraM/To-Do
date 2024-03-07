@@ -1,20 +1,17 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client } = require('discord.js');
 const sqlite3 = require('sqlite3').verbose();
-const { interactionCreate, ready } = require('./events.js');
 let db = new sqlite3.Database('./tasks.db');
 const config = require('./config.json');
 const { keepAlive } = require('./keepAlive.js')
+const { ready, interactionCreate, clientOptions } = require('./events.js')
+
 keepAlive()
 
-
 db.run('CREATE TABLE IF NOT EXISTS tasks(task TEXT, due_date TEXT)');
-db.run('CREATE TABLE IF NOT EXISTS config(guild_id TEXT, channel_id TEXT)');
 
-const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
-});
+const client = new Client(clientOptions);
 
-client.once('ready', ready(client, db));
-client.on('interactionCreate', interactionCreate(client));
+client.once('ready', ready(client, db, config));
+client.on('interactionCreate', interactionCreate(client, db));
 
 client.login(config.token);
