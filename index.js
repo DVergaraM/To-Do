@@ -3,7 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 let db = new sqlite3.Database('./tasks.db');
 const config = require('./config.json');
 const { keepAlive } = require('./modules/keepAlive.js')
-const { ready, interactionCreate, clientOptions } = require('./modules/events.js')
+const { ready, interactionCreate, clientOptions } = require('./events.js')
 
 keepAlive()
 
