@@ -5,3 +5,4 @@ config.json
 package-lock.json
 tasks.db
 methods.js
+README.md

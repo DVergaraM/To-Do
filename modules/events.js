@@ -1,38 +1,44 @@
 const { ActivityType, GatewayIntentBits } = require('discord.js');
+const { handleAdd, handleList, handleDelete, handleSetDone, handleSetUndone } = require('./handler')
 
 function interactionCreate(client, db) {
-    return async interaction => {
+    return async (interaction) => {
         if (!interaction.isCommand()) return;
 
         const { commandName, options } = interaction;
 
-        if (commandName === 'add') {
-            let due_date = options.getString('fecha');
-            let task = options.getString('tarea');
-            db.run(`INSERT INTO tasks(task, due_date) VALUES(?, ?)`, [task, due_date], function (err) {
-                if (err) {
-                    return console.log(err.message);
-                }
-                interaction.reply(`Tarea "${task}" agregada para la fecha ${due_date}.`);
-            });
-        } else if (commandName === 'list') {
-            db.all('SELECT task, due_date FROM tasks', (err, rows) => {
-                if (err) {
-                    throw err;
-                }
-                let tasks = rows.map(r => `- ${r.task} - ${r.due_date}`).join('\n');
-                interaction.reply(`**Tareas pendientes:**\n${tasks}`);
-            });
-        } else if (commandName === 'ping') interaction.reply(client.ws.ping + 'ms', { ephemeral: true });
-        else if (commandName === 'help') client.application.commands.fetch().then(commands => {
-            let options = commands.map(c => c.options);
-            let help = commands.map(c => `- /${c.name} - ${c.description} \`- ${options}\``).join('\n');
-            interaction.reply(`Comandos disponibles:\n${help}`);
-        });
+        switch(commandName) {
+            case "add":
+                handleAdd(db, interaction, options);
+                break;
+            case "list":
+                handleList(db, interaction);
+                break;
+            case "setdone":
+                handleSetDone(db, interaction, options);
+                break;
+            case "setundone":
+                handleSetUndone(db, interaction, options);
+                break;
+            case "delete":
+                handleDelete(db, interaction, options);
+                break;
+            case "ping":
+                interaction.reply(client.ws.ping + 'ms', { ephemeral: true });
+                break;
+            case "help":
+                client.application.commands.fetch().then(commands => {
+                    let help = commands.map(c => `- /${c.name} - ${c.description}`).join('\n');
+                    interaction.reply(`Comandos disponibles:\n${help}`);
+                });
+                break;
+            default:
+                break;
+        }
     }
 }
 
-function convertlocalHourintoUTCHour(hour) {
+function convertUTCtoLocal(hour) {
     let UTC = hour - 5;
     if (UTC < 0) UTC += 24;
     return UTC;
@@ -41,18 +47,28 @@ function convertlocalHourintoUTCHour(hour) {
 function ready(client, db, config) {
     return () => {
         console.log(`Bot is ready as: ${client.user.tag}`);
+        /* client.application.commands.create({
+            name: 'delete',
+            description: 'Borra una tarea',
+            options: [{
+                name: 'id',
+                type: 3,
+                description: 'El ID de la tarea a borrar',
+                required: true,
+            }],
+        }) */
         setInterval(() => {
             let date = new Date();
             let today = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}`;
             let utcHours = date.getUTCHours();
             let utcMinutes = date.getUTCMinutes();
-            let localHour = convertlocalHourintoUTCHour(utcHours);
+            let localHour = convertUTCtoLocal(utcHours);
 
             let isFirstReminder = localHour === config.firstRecordatoryHour && utcMinutes === config.firstRecordatoryMinute;
             let isSecondReminder = localHour === config.secondRecordatoryHour && utcMinutes === config.secondRecordatoryMinute;
 
             let isReminderTime = isFirstReminder || isSecondReminder;
-            db.all('SELECT task FROM tasks', (err, rows) => {
+            db.all('SELECT task FROM tasks WHERE done=0', (err, rows) => {
                 if (err) {
                     throw err;
                 }
@@ -64,20 +80,20 @@ function ready(client, db, config) {
                 });
             });
             if (isReminderTime) {
-                db.all('SELECT task, due_date FROM tasks WHERE due_date >= ?', [today], (err, rows) => {
+                db.all('SELECT task, due_date, id FROM tasks WHERE due_date >= ? AND done=0', [today], (err, rows) => {
                     if (err) {
                         throw err;
                     }
                     let tasks = rows.map(r => {
-                        let dueDate = new Date(r.due_date + 'T00:00:00Z');
+                        let dueDate = new Date(r.due_date + 'T12:00:00Z');
                         dueDate.setHours(dueDate.getHours() + 5)
                         let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
-                        return `- ${r.task} | <t:${epochTimestamp}:F>`;
+                        return `- ${r.id}. ${r.task} | <t:${epochTimestamp}:F>`;
                     }).join('\n');
                     let channel = client.channels.cache.get(config.channelID);
                     channel.send(`<@!551063515084095488> **Tienes ${rows.length} tareas pendientes para hoy:**\n${tasks}`);
                 });
-                db.run('DELETE FROM tasks WHERE due_date < ?', [today]);
+                db.run('DELETE FROM tasks WHERE due_date < ? AND done=1', [today]);
             }
         }, 60000);
     }
