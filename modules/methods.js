@@ -1,4 +1,5 @@
-const { ActivityType } = require("discord.js");
+const { Client, ActivityType } = require("discord.js");
+const { Database } = require("sqlite3");
 
 /**
  * Converts a given UTC hour to the corresponding local hour.
@@ -29,17 +30,19 @@ function getDate(date) {
  *
  * @param {Date} date - The date to check.
  * @param {Object} config - The configuration object containing reminder times.
- * @returns {Array} - An array containing the current date and a boolean indicating if it matches any reminder time.
+ * @param {Object[]} config.recordatories - An array of reminder times.
+ * @param {number} config.recordatories[].hour - The hour of the reminder.
+ * @param {number} config.recordatories[].minute - The minute of the reminder.
+ * @returns {Array<Date, boolean>} - An array containing the current date and a boolean indicating if it matches any reminder time.
  */
 function isReminderTime(date, config) {
   let [today, localHour, utcMinutes] = getDate(date);
-  let reminders = ["first", "second", "third", "fourth"];
   return [
     today,
-    reminders.some(
-      reminder =>
-        localHour === config[`${reminder}RecordatoryHour`] &&
-        utcMinutes === config[`${reminder}RecordatoryMinute`]
+    config.recordatories.some(
+      recordatory =>
+        localHour === recordatory.hour &&
+        utcMinutes === recordatory.minute
     ),
   ];
 }
