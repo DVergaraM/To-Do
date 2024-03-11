@@ -1,7 +1,7 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const { reminder, commandHandling } = require('./clientMethods');
-const { isReminderTime, changeStatus } = require('./methods');
-const { Database } = require('sqlite3');
+const { Client, GatewayIntentBits } = require("discord.js");
+const { reminder, commandHandling } = require("./clientMethods");
+const { isReminderTime, changeStatus } = require("./methods");
+const { Database } = require("sqlite3");
 
 /**
  * Handles the interaction create event.
@@ -11,10 +11,10 @@ const { Database } = require('sqlite3');
  * @returns {Function} - The interaction create event handler.
  */
 function interactionCreate(client, db) {
-    return async (interaction) => {
+    return async interaction => {
         if (!interaction.isCommand()) return;
-        commandHandling(client, interaction, db)
-    }
+        commandHandling(client, interaction, db);
+    };
 }
 
 /**
@@ -30,10 +30,10 @@ function ready(client, db, config) {
         setInterval(() => {
             let date = new Date();
             let [today, condition] = isReminderTime(date, config);
-            changeStatus(client, db)
-            reminder(client, db, config, today, condition)
+            changeStatus(client, db);
+            reminder(client, db, config, today, condition);
         }, 60000);
-    }
+    };
 }
 /**
  * Options for the Discord client.
@@ -48,10 +48,10 @@ function ready(client, db, config) {
  * @type {ClientOptions}
  */
 const clientOptions = {
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
-}
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+};
 module.exports = {
     ready,
     interactionCreate,
-    clientOptions
-}
+    clientOptions,
+};

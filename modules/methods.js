@@ -1,4 +1,4 @@
-const { ActivityType } = require('discord.js');
+const { ActivityType } = require("discord.js");
 
 /**
  * Converts a given UTC hour to the corresponding local hour.
@@ -6,9 +6,9 @@ const { ActivityType } = require('discord.js');
  * @returns {number} - The corresponding local hour.
  */
 function convertUTCtoLocal(hour) {
-    let UTC = hour - 5;
-    if (UTC < 0) UTC += 24;
-    return UTC;
+  let UTC = hour - 5;
+  if (UTC < 0) UTC += 24;
+  return UTC;
 }
 /**
  * Get the date, local hour, and UTC minutes.
@@ -16,11 +16,13 @@ function convertUTCtoLocal(hour) {
  * @returns {Array} - An array containing the date, local hour, and UTC minutes.
  */
 function getDate(date) {
-    let today = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1).toString().padStart(2, '0')}-${date.getUTCDate().toString().padStart(2, '0')}`;
-    let utcHours = date.getUTCHours();
-    let utcMinutes = date.getUTCMinutes();
-    let localHour = convertUTCtoLocal(utcHours);
-    return [today, localHour, utcMinutes];
+  let today = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${date.getUTCDate().toString().padStart(2, "0")}`;
+  let utcHours = date.getUTCHours();
+  let utcMinutes = date.getUTCMinutes();
+  let localHour = convertUTCtoLocal(utcHours);
+  return [today, localHour, utcMinutes];
 }
 /**
  * Checks if the given date matches any of the configured reminder times.
@@ -30,9 +32,16 @@ function getDate(date) {
  * @returns {Array} - An array containing the current date and a boolean indicating if it matches any reminder time.
  */
 function isReminderTime(date, config) {
-    let [today, localHour, utcMinutes] = getDate(date);
-    let reminders = ['first', 'second', 'third', 'fourth'];
-    return [today, reminders.some(reminder => localHour === config[`${reminder}RecordatoryHour`] && utcMinutes === config[`${reminder}RecordatoryMinute`])];
+  let [today, localHour, utcMinutes] = getDate(date);
+  let reminders = ["first", "second", "third", "fourth"];
+  return [
+    today,
+    reminders.some(
+      reminder =>
+        localHour === config[`${reminder}RecordatoryHour`] &&
+        utcMinutes === config[`${reminder}RecordatoryMinute`]
+    ),
+  ];
 }
 
 /**
@@ -41,18 +50,22 @@ function isReminderTime(date, config) {
  * @param {Database} db - The database object.
  */
 function changeStatus(client, db) {
-    db.all('SELECT task FROM tasks WHERE done=0', (err, rows) => {
-        if (err) throw err;
-        let tasks = rows.map(r => r.task);
-        if (tasks.length === 0) return;
-        else if (tasks.length === 1) client.user.setActivity('1 tarea pendiente', { type: ActivityType.Watching });
-        else client.user.setActivity(`${tasks.length} tareas pendientes`, {
-            type: ActivityType.Watching
-        });
-    });
+  db.all("SELECT task FROM tasks WHERE done=0", (err, rows) => {
+    if (err) throw err;
+    let tasks = rows.map(r => r.task);
+    if (tasks.length === 0) return;
+    else if (tasks.length === 1)
+      client.user.setActivity("1 tarea pendiente", {
+        type: ActivityType.Watching,
+      });
+    else
+      client.user.setActivity(`${tasks.length} tareas pendientes`, {
+        type: ActivityType.Watching,
+      });
+  });
 }
 
 module.exports = {
-    isReminderTime,
-    changeStatus
-}
+  isReminderTime,
+  changeStatus,
+};
