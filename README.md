@@ -1,69 +1,36 @@
-PROYECTO CALCULO I 
+# To-Do Bot
 
-CONSTRUCCIÓN DE UNA MEJOR MONTAÑA RUSA 
+## Discord Bot Configuration
 
- 
+This README file outlines how to set up your `config.example.json` for your Discord bot.
 
-INTEGRANTES: 
+### Setup
 
-Daniel Vergara Martínez 
+First, rename the `config.example.json` file to `config.json`.
 
-Santiago Peña López 
+Then, replace the configuration values in the `config.json` file with your own:
 
-Nicol Valentina Rubio 
+- `token`: This is your Discord bot's token. You can get this token from the Discord developer portal.
+- `testChannelID`: This is the ID of the Discord channel where you want your bot to perform tests.
+- `channelID`: This is the ID of the Discord channel where you want your bot to operate.
+- `guildID`: This is the ID of the Discord server where your bot is located.
+- `userID`: This is your Discord user ID.
 
-Juan Sebastián Cuesta  
+Additionally, you can set up reminders in the `recordatories` array. Each object in the array represents a reminder and has two properties:
 
- 
+- `hour`: The hour of the day (in 24-hour format) when you want the reminder to trigger.
+- `minute`: The minute of the hour when you want the reminder to trigger.
 
-OBJETIVOS 
+For example, if you want a reminder at 9:00 and 12:00, your `recordatories` array would look like this:
 
-1. Definir la parábola: 
-
-- Encontrar la ecuación de la parábola y = ax^2 + bx + c que une los dos segmentos rectos. 
-
-- Determinar los coeficientes a, b y c de la parábola. 
-
- 
-
-2. Asegurar la tangencia en los puntos de transición: 
-
-- Imponer las condiciones de tangencia en los puntos P y Q. 
-
-- Estas condiciones se traducen en un sistema de ecuaciones que involucra a los coeficientes de la parábola y las pendientes de los segmentos rectos. 
-
-  
-
-3. Encontrar la altura máxima de la subida: 
-
-- Determinar el valor máximo de la función y = ax^2 + bx + c en el intervalo de subida. 
-
-  
-
-4. Calcular la longitud total de la subida y bajada: 
-
-- Sumar la longitud de los dos segmentos rectos y la longitud de la parábola. 
-
- 
-
-5. Optimizar la experiencia del usuario: 
-
-- Ajustar los parámetros de la parábola para lograr una subida y bajada emocionante y segura. 
-
-- Considerar factores como la velocidad, la aceleración y la fuerza G. 
-
-  
-
-6. Validar el diseño: 
-
-- Simular el movimiento de la montaña rusa utilizando software especializado. 
-
-- Asegurar que el diseño cumple con las normas de seguridad y ofrece una - experiencia agradable a los usuarios. 
-
- 
-
-BIBLIOGRAFÍA 
-
- 
-
-Cálculo (Octava Edición), Stewart 
+```json
+"recordatories": [
+    {
+        "hour": 9,
+        "minute": 0
+    },
+    {
+        "hour": 12,
+        "minute": 0
+    }
+]

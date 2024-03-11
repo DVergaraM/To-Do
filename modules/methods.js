@@ -14,7 +14,7 @@ function convertUTCtoLocal(hour) {
 /**
  * Get the date, local hour, and UTC minutes.
  * @param {Date} date - The date object.
- * @returns {Array} - An array containing the date, local hour, and UTC minutes.
+ * @returns {Array<string, number>} - An array containing the date, local hour, and UTC minutes.
  */
 function getDate(date) {
   let today = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1)
