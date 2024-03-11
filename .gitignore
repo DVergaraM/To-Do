@@ -4,5 +4,5 @@ node_modules/*
 config.json
 package-lock.json
 tasks.db
-methods.js
+*.txt
 README.md
