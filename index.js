@@ -1,11 +1,12 @@
 const { Client } = require("discord.js");
 const sqlite3 = require("sqlite3").verbose();
+const app = require("express")();
 let db = new sqlite3.Database("./tasks.db");
 const config = require("./config.json");
 const { keepAlive } = require("./modules/keepAlive");
 const { ready, interactionCreate, clientOptions } = require("./modules/events");
 
-keepAlive();
+keepAlive(app, 3000);
 
 const client = new Client(clientOptions);
 
