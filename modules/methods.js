@@ -1,5 +1,6 @@
 const { Client, ActivityType } = require("discord.js");
 const { Database } = require("sqlite3");
+const config = require("../config.json");
 
 /**
  * Converts a given UTC hour to the corresponding local hour.
@@ -58,13 +59,18 @@ function changeStatus(client, db) {
     let tasks = rows.map(r => r.task);
     if (tasks.length === 0) return;
     else if (tasks.length === 1)
-      client.user.setActivity("1 tarea pendiente", {
+      client.user.setActivity(config.lang.en.defaultActivity, {
         type: ActivityType.Watching,
       });
-    else
-      client.user.setActivity(`${tasks.length} tareas pendientes`, {
+    else {
+      let activity = config.lang.en.defaultActivityPlural.replace(
+        "{0}",
+        tasks.length
+      );
+      client.user.setActivity(activity, {
         type: ActivityType.Watching,
       });
+    }
   });
 }
 

@@ -2,13 +2,13 @@ const { Client } = require("discord.js");
 const commands = require("./commands");
 const { Database } = require("sqlite3");
 const botCommands = new Map([
-    ["add", commands.addTask],
-    ["list", commands.listTasks],
-    ["ping", commands.ping],
-    ["help", commands.help],
-    ["delete", commands.deleteTask],
-    ["setdone", commands.setDone],
-    ["setundone", commands.setUndone],
+  ["add", commands.addTask],
+  ["list", commands.listTasks],
+  ["ping", commands.ping],
+  ["help", commands.help],
+  ["delete", commands.deleteTask],
+  ["setdone", commands.setDone],
+  ["setundone", commands.setUndone],
 ]);
 
 /**
@@ -20,28 +20,27 @@ const botCommands = new Map([
  * @param {boolean} isReminderTime - Indicates whether it's time to send the reminder.
  */
 function reminder(client, db, config, today, isReminderTime) {
-    if (isReminderTime) {
-        db.all(
-            "SELECT task, due_date, id FROM tasks WHERE due_date >= ? AND done=0",
-            [today],
-            (err, rows) => {
-                if (err) throw err;
-                let tasks = rows
-                    .map(r => {
-                        let dueDate = new Date(r.due_date + "T12:00:00Z");
-                        dueDate.setHours(dueDate.getHours() + 5);
-                        let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
-                        return `- ${r.id}. ${r.task} | <t:${epochTimestamp}:F>`;
-                    })
-                    .join("\n");
-                let channel = client.channels.cache.get(config.channelID);
-                channel.send(
-                    `<@!${config.userID}> **Tienes ${rows.length} tareas pendientes para hoy:**\n${tasks}`
-                );
-            }
-        );
-        db.run("DELETE FROM tasks WHERE due_date < ? AND done=1", [today]);
-    }
+  if (isReminderTime) {
+    db.all(
+      "SELECT task, due_date, id FROM tasks WHERE due_date >= ? AND done=0",
+      [today],
+      (err, rows) => {
+        if (err) throw err;
+        let tasks = rows
+          .map((r) => {
+            let dueDate = new Date(r.due_date + "T12:00:00Z");
+            dueDate.setHours(dueDate.getHours() + 5);
+            let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
+            return `- ${r.id}. ${r.task} | <t:${epochTimestamp}:F>`;
+          })
+          .join("\n");
+        let channel = client.channels.cache.get(config.channelID);
+        let message = config.lang.en.reminder.replace("{0}", rows.length);
+        channel.send(`<@!${config.userID}> **${message}**\n${tasks}`);
+      }
+    );
+    db.run("DELETE FROM tasks WHERE due_date < ? AND done=1", [today]);
+  }
 }
 
 /**
@@ -53,11 +52,11 @@ function reminder(client, db, config, today, isReminderTime) {
  * @returns {void}
  */
 function commandHandling(client, interaction, db) {
-    const { commandName, options } = interaction;
-    if (!botCommands.has(commandName)) return;
-    botCommands.get(commandName)(client, interaction, options, db);
+  const { commandName, options } = interaction;
+  if (!botCommands.has(commandName)) return;
+  botCommands.get(commandName)(client, interaction, options, db);
 }
 module.exports = {
-    reminder,
-    commandHandling,
+  reminder,
+  commandHandling,
 };
