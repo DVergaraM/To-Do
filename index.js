@@ -5,8 +5,8 @@ let db = new sqlite3.Database("./tasks.db");
 const config = require("./config.json");
 const { keepAlive } = require("./modules/keepAlive");
 const { ready, interactionCreate, clientOptions } = require("./modules/events");
-
-keepAlive(app, 3000);
+db.run("CREATE TABLE IF NOT EXISTS guilds(id TEXT PRIMARY KEY, language TEXT)");
+keepAlive(app, 3001);
 
 const client = new Client(clientOptions);
 

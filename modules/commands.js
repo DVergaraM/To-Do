@@ -1,6 +1,9 @@
 const { Client } = require("discord.js");
 const { Database } = require("sqlite3");
 
+const { fetch } = require('./methods')
+
+
 const config = require("../config.json");
 
 /**
@@ -10,9 +13,10 @@ const config = require("../config.json");
  * @param {Object} options - The options object containing the task and due date.
  * @param {Database} db - The database object used to run the query.
  */
-function addTask(_, interaction, options, db) {
+async function addTask(_, interaction, options, db) {
   let due_date = options.getString("fecha");
   let task = options.getString("tarea");
+  let lang = await fetch(db, interaction.guild.id)
   db.run(
     `INSERT INTO tasks(task, due_date) VALUES(?, ?)`,
     [task, due_date],
@@ -21,7 +25,7 @@ function addTask(_, interaction, options, db) {
       let dt = new Date(due_date + "T12:00:00Z");
       dt.setHours(dt.getHours() + 5);
       let epochTimestamp = Math.floor(dt.getTime() / 1000);
-      let message = config.lang.en.add
+      let message = lang["add"]
         .replace("{0}", task)
         .replace("{1}", `<t:${epochTimestamp}:F>`);
       interaction.reply(message);
@@ -38,17 +42,20 @@ function addTask(_, interaction, options, db) {
  * @param {Database} db - The database object.
  * @returns {void}
  */
-function listTasks(_, interaction, options, db) {
+async function listTasks(_, interaction, options, db) {
   let status = options ? options.getString("status") : null;
   let query = "SELECT task, due_date, id FROM tasks";
+  let lang = await fetch(db, interaction.guild.id)
 
   if (status === "done") {
     query += " WHERE done = 1";
   } else if (status === "undone") {
     query += " WHERE done = 0";
+  }else {
+    query += " WHERE done = 0";
   }
 
-  db.all(query, (err, rows) => {
+  db.all(query, async (err, rows) => {
     if (err) throw err;
     let tasks = rows
       .map((r) => {
@@ -60,14 +67,14 @@ function listTasks(_, interaction, options, db) {
       .join("\n");
 
     if (status) {
-      let message = config.lang.en.list_status
+      let message = lang["list_status"]
         .replace("{0}", status)
         .replace("{1}", tasks);
       interaction.reply(message);
     } else {
       db.all(
         "SELECT task, due_date, id FROM tasks WHERE done = 1",
-        (err, rows) => {
+        async (err, rows) => {
           if (err) throw err;
           let doneTasks = rows
             .map((r) => {
@@ -77,7 +84,7 @@ function listTasks(_, interaction, options, db) {
               return `- ${r.id}. ${r.task} | <t:${epochTimestamp}:R>`;
             })
             .join("\n");
-          let message = config.lang.en.list
+          let message = lang["list"]
             .replace("{0}", tasks)
             .replace("{1}", doneTasks);
           interaction.reply(message);
@@ -108,14 +115,15 @@ function ping(client, interaction, _, _b) {
  * @param {Database} _a - The database object.
  * @returns {void}
  */
-function help(client, interaction, _, _a) {
+async function help(client, interaction, _, _a) {
+  let lang = await fetch(db, interaction.guild.id)
   client.application.commands.fetch().then((commands) => {
     const commandList = commands
       .map((c) => {
         return `/${c.name} - ${c.description}`;
       })
       .join("\n");
-    let message = config.lang.en.help.replace("{0}", commandList);
+    let message = lang["help"].replace("{0}", commandList);
     interaction.reply(message);
   });
 }
@@ -129,11 +137,12 @@ function help(client, interaction, _, _a) {
  * @param {Database} db - The database object.
  * @returns {void}
  */
-function deleteTask(_, interaction, options, db) {
+async function deleteTask(_, interaction, options, db) {
   let taskDelete = parseInt(options.getString("id"));
+  let lang = await fetch(db, interaction.guild.id)
   db.run(`DELETE FROM tasks WHERE id = ?`, [taskDelete], (err) => {
     if (err) return console.log(err.message);
-    let message = config.lang.en.deleteTask.replace("{0}", taskDelete);
+    let message =lang["deleteTask"].replace("{0}", taskDelete);
     interaction.reply(message);
   });
 }
@@ -147,11 +156,12 @@ function deleteTask(_, interaction, options, db) {
  * @param {Database} db - The database object.
  * @returns {void}
  */
-function setDone(_, interaction, options, db) {
+async function setDone(_, interaction, options, db) {
   let taskId = parseInt(options.getString("id"));
+  let lang = await fetch(db, interaction.guild.id)
   db.run(`UPDATE tasks SET Done = 1 WHERE id = ?`, [taskId], (err) => {
     if (err) return console.log(err.message);
-    let message = config.lang.en.setDone.replace("{0}", taskId);
+    let message = lang["setDone"].replace("{0}", taskId);
     interaction.reply(message);
   });
 }
@@ -165,11 +175,22 @@ function setDone(_, interaction, options, db) {
  * @param {Database} db - The database object.
  * @returns {void}
  */
-function setUndone(_, interaction, options, db) {
+async function setUndone(_, interaction, options, db) {
   let taskId = parseInt(options.getString("id"));
+  let lang = await fetch(db, interaction.guild.id)
   db.run(`UPDATE tasks SET Done = 0 WHERE id = ?`, [taskId], (err) => {
     if (err) return console.log(err.message);
-    let message = config.lang.en.setUndone.replace("{0}", taskId);
+    let message = lang["setUndone"].replace("{0}", taskId);
+    interaction.reply(message);
+  });
+}
+
+async function setLanguage(_, interaction, options, db) {
+  let language = options.getString("language");
+  let lang = await fetch(db, interaction.guild.id)
+  db.run(`UPDATE guilds SET language = ? WHERE id = ?`, [language, interaction.guild.id], (err) => {
+    if (err) return console.log(err.message);
+    let message = lang["setLanguage"].replace("{0}", language);
     interaction.reply(message);
   });
 }
@@ -182,4 +203,5 @@ module.exports = {
   deleteTask,
   setDone,
   setUndone,
+  setLanguage
 };

@@ -1,6 +1,7 @@
 const { Client, ActivityType } = require("discord.js");
 const { Database } = require("sqlite3");
 const config = require("../config.json");
+const request = require("request");
 
 /**
  * Converts a given UTC hour to the corresponding local hour.
@@ -41,9 +42,8 @@ function isReminderTime(date, config) {
   return [
     today,
     config.recordatories.some(
-      recordatory =>
-        localHour === recordatory.hour &&
-        utcMinutes === recordatory.minute
+      (recordatory) =>
+        localHour === recordatory.hour && utcMinutes === recordatory.minute
     ),
   ];
 }
@@ -52,18 +52,20 @@ function isReminderTime(date, config) {
  * Changes the status of the client's activity based on the number of pending tasks.
  * @param {Client} client - The Discord client object.
  * @param {Database} db - The database object.
+ * @param {string} guildID - The ID of the guild to fetch the language from
  */
-function changeStatus(client, db) {
+async function changeStatus(client, db, guildID) {
+  let lang = await fetch(db, guildID);
   db.all("SELECT task FROM tasks WHERE done=0", (err, rows) => {
     if (err) throw err;
-    let tasks = rows.map(r => r.task);
+    let tasks = rows.map((r) => r.task);
     if (tasks.length === 0) return;
     else if (tasks.length === 1)
-      client.user.setActivity(config.lang.en.defaultActivity, {
+      client.user.setActivity(lang["defaultActivity"], {
         type: ActivityType.Watching,
       });
     else {
-      let activity = config.lang.en.defaultActivityPlural.replace(
+      let activity = lang["defaultActivityPlural"].replace(
         "{0}",
         tasks.length
       );
@@ -74,7 +76,50 @@ function changeStatus(client, db) {
   });
 }
 
+function fetch(db, guildID) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT language FROM guilds WHERE id = ?",
+      [guildID],
+      (err, row) => {
+        if (err) {
+          console.error("Error:", err);
+          reject(err);
+        }
+
+        if (!row) {
+          db.run(
+            "INSERT INTO guilds(id, language) VALUES(?, ?)",
+            [guildID, "en"],
+            (err) => {
+              if (err) {
+                console.error("Error:", err);
+                reject(err);
+              } else {
+                resolve("en");
+              }
+            }
+          );
+        } else {
+          let language = row.language;
+          const url = `http://localhost:3000/language/${language}`;
+
+          request({ url, json: true }, (error, response, body) => {
+            if (error) {
+              console.error("Error:", error);
+              // Aún resuelve la promesa con el cuerpo de la respuesta, incluso si hay un error
+              resolve(body);
+            } else {
+              resolve(body);
+            }
+          });
+        }
+      }
+    );
+  });
+}
 module.exports = {
   isReminderTime,
   changeStatus,
+  fetch,
 };

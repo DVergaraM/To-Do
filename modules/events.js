@@ -27,10 +27,24 @@ function interactionCreate(client, db) {
 function ready(client, db, config) {
     return () => {
         console.log(`Bot is ready as: ${client.user.tag}`);
+        /* client.application.commands.create({
+            name: 'setlanguage',
+            description: 'Set the language for this guild',
+            options: [{
+                name: 'language',
+                type: 3,
+                description: 'The language to set',
+                required: true,
+                choices: [
+                    { name: 'English', value: 'en' },
+                    { name: 'Spanish', value: 'es' },
+                ],
+            }],
+        }); */
         setInterval(() => {
             let date = new Date();
             let [today, condition] = isReminderTime(date, config);
-            changeStatus(client, db);
+            changeStatus(client, db, config.guildID);
             reminder(client, db, config, today, condition);
         }, 60000);
     };

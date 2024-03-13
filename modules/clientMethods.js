@@ -1,5 +1,5 @@
 const { Client } = require("discord.js");
-const commands = require("./commands");
+const commands = require("./commands.js");
 const { Database } = require("sqlite3");
 const botCommands = new Map([
   ["add", commands.addTask],
@@ -9,6 +9,7 @@ const botCommands = new Map([
   ["delete", commands.deleteTask],
   ["setdone", commands.setDone],
   ["setundone", commands.setUndone],
+  ["setlanguage", commands.setLanguage],
 ]);
 
 /**
@@ -35,7 +36,7 @@ function reminder(client, db, config, today, isReminderTime) {
           })
           .join("\n");
         let channel = client.channels.cache.get(config.channelID);
-        let message = config.lang.en.reminder.replace("{0}", rows.length);
+        let message = config.lang.es.reminder.replace("{0}", rows.length);
         channel.send(`<@!${config.userID}> **${message}**\n${tasks}`);
       }
     );

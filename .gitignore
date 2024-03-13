@@ -6,3 +6,4 @@ package-lock.json
 tasks.db
 *.txt
 README.md
+/verilog
