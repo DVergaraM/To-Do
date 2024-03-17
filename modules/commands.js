@@ -1,36 +1,32 @@
-const { Client } = require("discord.js");
+const { Client, CommandInteractionOptionResolver: Options } = require("discord.js");
 const { Database } = require("sqlite3");
 
-const { fetch } = require('./methods')
+const {
+  fetch,
+  updateConfig,
+  getLanguage,
+  getTasks,
+  updateTask,
+  getConfig,
+  deleteTask: deleteTaskAPI,
+  addTask: addTaskAPI,
+} = require("./methods");
 
-
-const config = require("../config.json");
 
 /**
  * Adds a task to the database and sends a reply message.
  * @param {Client} _ - Placeholder for the command context.
  * @param {import('discord.js').Interaction} interaction - The interaction object representing the command interaction.
- * @param {Object} options - The options object containing the task and due date.
- * @param {Database} db - The database object used to run the query.
+ * @param {Options} options - The options object containing the task and due date.
  */
-async function addTask(_, interaction, options, db) {
+async function addTask(_, interaction, options) {
   let due_date = options.getString("fecha");
   let task = options.getString("tarea");
-  let lang = await fetch(db, interaction.guild.id)
-  db.run(
-    `INSERT INTO tasks(task, due_date) VALUES(?, ?)`,
-    [task, due_date],
-    (err) => {
-      if (err) return console.log(err.message);
-      let dt = new Date(due_date + "T12:00:00Z");
-      dt.setHours(dt.getHours() + 5);
-      let epochTimestamp = Math.floor(dt.getTime() / 1000);
-      let message = lang["add"]
-        .replace("{0}", task)
-        .replace("{1}", `<t:${epochTimestamp}:F>`);
-      interaction.reply(message);
-    }
-  );
+  let lang = await getLanguage(interaction.guild.id);
+  const { language } = lang || {};
+  addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
+  let message = language["add"].replace("{0}", task).replace("{1}", due_date);
+  interaction.reply(message);
 }
 
 /**
@@ -38,71 +34,60 @@ async function addTask(_, interaction, options, db) {
  *
  * @param {Client} _ - Placeholder for the first parameter.
  * @param {import('discord.js').Interaction} interaction - The interaction object.
- * @param {Object} options - The options object.
- * @param {Database} db - The database object.
- * @returns {void}
+ * @param {Options} options - The options object.
+ * @returns {Promise<void>}
  */
-async function listTasks(_, interaction, options, db) {
-  let status = options ? options.getString("status") : null;
-  let query = "SELECT task, due_date, id FROM tasks";
-  let lang = await fetch(db, interaction.guild.id)
+async function listTasks(_, interaction, options) {
+  const status = options.getString("status");
+  const lang = await getLanguage(interaction.guild.id);
 
-  if (status === "done") {
-    query += " WHERE done = 1";
-  } else if (status === "undone") {
-    query += " WHERE done = 0";
-  }else {
-    query += " WHERE done = 0";
+  if (!lang?.language?.list_status) {
+    console.error("Invalid language data:", lang?.language);
+    return;
   }
 
-  db.all(query, async (err, rows) => {
-    if (err) throw err;
-    let tasks = rows
-      .map((r) => {
-        let dt = new Date(r.due_date + "T12:00:00Z");
-        dt.setHours(dt.getHours() + 5);
-        let epochTimestamp = Math.floor(dt.getTime() / 1000);
-        return `- ${r.id}. ${r.task} | <t:${epochTimestamp}:R>`;
-      })
-      .join("\n");
+  let tasks = await getTasks(interaction.guild.id, status);
 
-    if (status) {
-      let message = lang["list_status"]
-        .replace("{0}", status)
-        .replace("{1}", tasks);
-      interaction.reply(message);
-    } else {
-      db.all(
-        "SELECT task, due_date, id FROM tasks WHERE done = 1",
-        async (err, rows) => {
-          if (err) throw err;
-          let doneTasks = rows
-            .map((r) => {
-              let dt = new Date(r.due_date + "T12:00:00Z");
-              dt.setHours(dt.getHours() + 5);
-              let epochTimestamp = Math.floor(dt.getTime() / 1000);
-              return `- ${r.id}. ${r.task} | <t:${epochTimestamp}:R>`;
-            })
-            .join("\n");
-          let message = lang["list"]
-            .replace("{0}", tasks)
-            .replace("{1}", doneTasks);
-          interaction.reply(message);
-        }
-      );
-    }
-  });
+  if (status) {
+    tasks = tasks.filter((t) => t.status === (status === "done"));
+  }
+
+  if (tasks.length === 0) {
+    return interaction.reply(lang.language.no_tasks);
+  }
+
+  const taskList = tasks
+    .map(
+      (t) => {
+        let dueDate = new Date(t.date + "T12:00:00Z");
+        dueDate.setHours(dueDate.getHours() + 5);
+        let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
+        return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F> - ${t.status ? lang.language.done : lang.language.pending}`;
+      }
+    )
+    .join("\n");
+
+  const message = status
+    ? lang.language.list_status
+      .replace("{0}", tasks.length)
+      .replace(
+        "{1}",
+        status === "done" ? lang.language.done : lang.language.pending
+      )
+      .replace("{2}", taskList)
+    : taskList;
+
+  interaction.reply({ content: message });
 }
 /**
  * Retrieves and lists tasks based on the specified status.
  *
  * @param {Client} client - Placeholder for the first parameter.
  * @param {import('discord.js').Interaction} interaction - The interaction object.
- * @param {Object} _ - The options object.
- * @param {Database} _b - The database object.
+ * @param {Options} _ - The options object.
  * @returns {void}
  */
-function ping(client, interaction, _, _b) {
+function ping(client, interaction, _) {
   interaction.reply(client.ws.ping + "ms", { ephemeral: true });
 }
 
@@ -111,19 +96,18 @@ function ping(client, interaction, _, _b) {
  *
  * @param {Client} client - Placeholder for the first parameter.
  * @param {import('discord.js').Interaction} interaction - The interaction object.
- * @param {Object} _ - The options object.
- * @param {Database} _a - The database object.
- * @returns {void}
+ * @param {Options} _ - The options object.
+ * @returns {Promise<void>}
  */
-async function help(client, interaction, _, _a) {
-  let lang = await fetch(db, interaction.guild.id)
+async function help(client, interaction, _) {
+  let lang = await getLanguage(interaction.guild.id);
   client.application.commands.fetch().then((commands) => {
     const commandList = commands
       .map((c) => {
         return `/${c.name} - ${c.description}`;
       })
       .join("\n");
-    let message = lang["help"].replace("{0}", commandList);
+    let message = lang.language.help.replace("{0}", commandList);
     interaction.reply(message);
   });
 }
@@ -133,18 +117,15 @@ async function help(client, interaction, _, _a) {
  *
  * @param {Client} _ - Placeholder for the first parameter.
  * @param {import('discord.js').Interaction} interaction - The interaction object.
- * @param {Object} options - The options object.
- * @param {Database} db - The database object.
- * @returns {void}
+ * @param {Options} options - The options object.
+ * @returns {Promise<void>}
  */
-async function deleteTask(_, interaction, options, db) {
+async function deleteTask(_, interaction, options) {
   let taskDelete = parseInt(options.getString("id"));
-  let lang = await fetch(db, interaction.guild.id)
-  db.run(`DELETE FROM tasks WHERE id = ?`, [taskDelete], (err) => {
-    if (err) return console.log(err.message);
-    let message =lang["deleteTask"].replace("{0}", taskDelete);
-    interaction.reply(message);
-  });
+  let lang = await getLanguage(interaction.guild.id);
+  await deleteTaskAPI(interaction.guild.id, taskDelete);
+  let message = lang.language.deleteTask.replace("{0}", taskDelete);
+  interaction.reply(message);
 }
 
 /**
@@ -152,18 +133,15 @@ async function deleteTask(_, interaction, options, db) {
  *
  * @param {Client} _ - Placeholder for the first parameter.
  * @param {import('discord.js').Interaction} interaction - The interaction object.
- * @param {Object} options - The options object.
- * @param {Database} db - The database object.
- * @returns {void}
+ * @param {Options} options - The options object.
+ * @returns {Promise<void>}
  */
-async function setDone(_, interaction, options, db) {
+async function setDone(_, interaction, options) {
   let taskId = parseInt(options.getString("id"));
-  let lang = await fetch(db, interaction.guild.id)
-  db.run(`UPDATE tasks SET Done = 1 WHERE id = ?`, [taskId], (err) => {
-    if (err) return console.log(err.message);
-    let message = lang["setDone"].replace("{0}", taskId);
-    interaction.reply(message);
-  });
+  await updateTask(taskId, "true");
+  let lang = await getLanguage(interaction.guild.id);
+  let message = lang.language.setDone.replace("{0}", taskId);
+  interaction.reply(message);
 }
 
 /**
@@ -171,28 +149,61 @@ async function setDone(_, interaction, options, db) {
  *
  * @param {Client} _ - Placeholder for the first parameter.
  * @param {import('discord.js').Interaction} interaction - The interaction object.
- * @param {Object} options - The options object.
- * @param {Database} db - The database object.
- * @returns {void}
+ * @param {Options} options - The options object.
+ * @returns {Promise<void>}
  */
-async function setUndone(_, interaction, options, db) {
+async function setUndone(_, interaction, options) {
   let taskId = parseInt(options.getString("id"));
-  let lang = await fetch(db, interaction.guild.id)
-  db.run(`UPDATE tasks SET Done = 0 WHERE id = ?`, [taskId], (err) => {
-    if (err) return console.log(err.message);
-    let message = lang["setUndone"].replace("{0}", taskId);
-    interaction.reply(message);
-  });
+  let lang = await getLanguage(interaction.guild.id);
+  await updateTask(taskId, "false");
+  let message = lang.language.setUndone.replace("{0}", taskId);
+  interaction.reply(message);
 }
 
-async function setLanguage(_, interaction, options, db) {
-  let language = options.getString("language");
-  let lang = await fetch(db, interaction.guild.id)
-  db.run(`UPDATE guilds SET language = ? WHERE id = ?`, [language, interaction.guild.id], (err) => {
-    if (err) return console.log(err.message);
-    let message = lang["setLanguage"].replace("{0}", language);
-    interaction.reply(message);
-  });
+/**
+ * Handles the configuration command.
+ *
+ * @param {Client} _ - Placeholder for the first parameter.
+ * @param {import("discord.js").Interaction} interaction - The interaction object.
+ * @param {Options} options - The options object.
+ * @returns {Promise<void>} - A promise that resolves when the configuration is handled.
+ */
+async function config(_, interaction, options) {
+  let command = options.getSubcommand();
+  let lang = await getLanguage(interaction.guild.id);
+
+  switch (command) {
+    case "get":
+      try {
+        let config = await getConfig(interaction.guild.id);
+        let message = lang.language.getConfig
+          .replace("{0}", config.channel)
+          .replace("{1}", config.user)
+          .replace("{2}", config.language);
+        interaction.reply(message);
+      } catch (e) {
+        console.error(e);
+        interaction.reply(lang.language.configError);
+      }
+      break;
+
+    case "set":
+      let channel = options.getChannel("channel") ? options.getChannel("channel").id : "";
+      let user = options.getUser("user") ? options.getUser("user").id : "";
+      let language = options.getString("language") ? options.getString("language") : "";
+
+      if (channel || user || language) {
+        updateConfig(interaction.guild.id, channel, user, language);
+        interaction.reply(lang.language.saved)
+      } else {
+        interaction.reply(lang.language.saveError);
+      }
+      break;
+
+    case "reset":
+      updateConfig(interaction.guild.id, "", "", "en");
+      break;
+  }
 }
 
 module.exports = {
@@ -203,5 +214,5 @@ module.exports = {
   deleteTask,
   setDone,
   setUndone,
-  setLanguage
+  config,
 };

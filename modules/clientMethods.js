@@ -1,6 +1,8 @@
 const { Client } = require("discord.js");
 const commands = require("./commands.js");
 const { Database } = require("sqlite3");
+const request = require('request');
+const { getChannel, getUser, getLanguage, getTasks} = require("./methods.js");
 const botCommands = new Map([
   ["add", commands.addTask],
   ["list", commands.listTasks],
@@ -9,38 +11,47 @@ const botCommands = new Map([
   ["delete", commands.deleteTask],
   ["setdone", commands.setDone],
   ["setundone", commands.setUndone],
-  ["setlanguage", commands.setLanguage],
+  ["config", commands.config],
 ]);
 
+
 /**
- * Sends a reminder message to the specified user with pending tasks for today.
+ * Sends reminders for tasks that are due today.
  * @param {Client} client - The Discord client object.
- * @param {Database} db - The database object.
  * @param {Object} config - The configuration object.
- * @param {string} today - The current date in YYYY-MM-DD format.
- * @param {boolean} isReminderTime - Indicates whether it's time to send the reminder.
+ * @param {string} today - The current date in string format.
+ * @param {boolean} isReminderTime - Indicates whether it's time to send reminders.
+ * @returns {Promise<void>} - A promise that resolves when the reminders are sent.
  */
-function reminder(client, db, config, today, isReminderTime) {
+async function reminder(client, config, today, isReminderTime) {
   if (isReminderTime) {
-    db.all(
-      "SELECT task, due_date, id FROM tasks WHERE due_date >= ? AND done=0",
-      [today],
-      (err, rows) => {
-        if (err) throw err;
-        let tasks = rows
-          .map((r) => {
-            let dueDate = new Date(r.due_date + "T12:00:00Z");
+    try {
+      let lang = await getLanguage(config.guildID);
+      let channeldb = await getChannel(config.guildID);
+      let user = await getUser(config.guildID);
+      let tasks = await getTasks(config.guildID);
+      let tasksToSend = tasks.filter(t => new Date(t.date) >= new Date(today) && t.status === false);
+      let tasksToDelete = tasks.filter(t => new Date(t.date) < new Date(today) && t.status === true);
+      if (tasksToSend.length > 0) {
+        let tasksMessage = tasksToSend
+          .map((t) => {
+            let dueDate = new Date(t.date + "T12:00:00Z");
             dueDate.setHours(dueDate.getHours() + 5);
             let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
-            return `- ${r.id}. ${r.task} | <t:${epochTimestamp}:F>`;
+            return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F>`;
           })
           .join("\n");
-        let channel = client.channels.cache.get(config.channelID);
-        let message = config.lang.es.reminder.replace("{0}", rows.length);
-        channel.send(`<@!${config.userID}> **${message}**\n${tasks}`);
+        let channel = client.channels.cache.get(channeldb.channelID);
+        let message = lang.language.reminder.replace("{0}", tasksToSend.length);
+        await channel.send(`<@!${user.userID}> **${message}**\n: ${tasksMessage}`); // Esperar a que el mensaje se envíe
       }
-    );
-    db.run("DELETE FROM tasks WHERE due_date < ? AND done=1", [today]);
+
+      for (let t of tasksToDelete) {
+        await deleteTask(config.guildID, t.id);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 
@@ -49,13 +60,12 @@ function reminder(client, db, config, today, isReminderTime) {
  *
  * @param {Client} client - The Discord client object.
  * @param {import('discord.js').Interaction} interaction - The interaction object representing the command.
- * @param {Database} db - The database object (or any other relevant data) needed for command execution.
  * @returns {void}
  */
-function commandHandling(client, interaction, db) {
+function commandHandling(client, interaction) {
   const { commandName, options } = interaction;
   if (!botCommands.has(commandName)) return;
-  botCommands.get(commandName)(client, interaction, options, db);
+  botCommands.get(commandName)(client, interaction, options);
 }
 module.exports = {
   reminder,
