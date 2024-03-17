@@ -1,52 +1,58 @@
 const { Client, GatewayIntentBits } = require("discord.js");
 const { reminder, commandHandling } = require("./clientMethods");
-const { isReminderTime, changeStatus } = require("./methods");
-const { Database } = require("sqlite3");
+const { isReminderTime, changeStatus, createConfig, deleteConfig } = require("./methods");
+
 
 /**
- * Handles the interaction create event.
- * 
+ * Handles the interactionCreate event.
+ *
  * @param {Client} client - The Discord client.
- * @param {Database} db - The database object.
- * @returns {Function} - The interaction create event handler.
+ * @returns {Function} - The interactionCreate event handler.
  */
-function interactionCreate(client, db) {
+function interactionCreate(client) {
     return async interaction => {
         if (!interaction.isCommand()) return;
-        commandHandling(client, interaction, db);
+        commandHandling(client, interaction);
+    };
+}
+
+
+/**
+ * Function that returns a callback function to be executed when the bot is ready.
+ * @param {Client} client - The Discord client object.
+ * @param {Object} config - The configuration object.
+ * @returns {Function} - The callback function to be executed when the bot is ready.
+ */
+function ready(client, config) {
+    return async () => {
+        console.log(`Bot is ready as: ${client.user.tag}`);
+        setInterval(async () => {
+            let date = new Date();
+            let [today, condition] = isReminderTime(date, config);
+            await changeStatus(client, config.guildID);
+            await reminder(client, config, today, condition);
+        }, 60000);
     };
 }
 
 /**
- * Function that is called when the bot is ready.
- * @param {Client} client - The Discord client object.
- * @param {Database} db - The database object.
- * @param {Object} config - The configuration object.
- * @returns {Function} - A function that is called when the bot is ready.
+ * Creates a guild create event handler.
+ * @returns {Function} The guild create event handler function.
  */
-function ready(client, db, config) {
-    return () => {
-        console.log(`Bot is ready as: ${client.user.tag}`);
-        /* client.application.commands.create({
-            name: 'setlanguage',
-            description: 'Set the language for this guild',
-            options: [{
-                name: 'language',
-                type: 3,
-                description: 'The language to set',
-                required: true,
-                choices: [
-                    { name: 'English', value: 'en' },
-                    { name: 'Spanish', value: 'es' },
-                ],
-            }],
-        }); */
-        setInterval(() => {
-            let date = new Date();
-            let [today, condition] = isReminderTime(date, config);
-            changeStatus(client, db, config.guildID);
-            reminder(client, db, config, today, condition);
-        }, 60000);
+function guildCreate() {
+    return guild => {
+        createConfig(guild.id);
+    };
+}
+
+
+/**
+ * Deletes the configuration for a guild.
+ * @param {Guild} guild - The guild object.
+ */
+function guildDelete() {
+    return guild => {
+        deleteConfig(guild.id);
     };
 }
 /**
@@ -68,4 +74,6 @@ module.exports = {
     ready,
     interactionCreate,
     clientOptions,
+    guildCreate,
+    guildDelete,
 };
