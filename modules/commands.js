@@ -1,17 +1,18 @@
-const { Client, CommandInteractionOptionResolver: Options } = require("discord.js");
+const {
+  Client,
+  CommandInteractionOptionResolver: Options,
+} = require("discord.js");
 const { Database } = require("sqlite3");
 
 const {
-  fetch,
   updateConfig,
   getLanguage,
-  getTasks,
   updateTask,
   getConfig,
   deleteTask: deleteTaskAPI,
   addTask: addTaskAPI,
+  getTasksByGuild,
 } = require("./methods");
-
 
 /**
  * Adds a task to the database and sends a reply message.
@@ -46,7 +47,7 @@ async function listTasks(_, interaction, options) {
     return;
   }
 
-  let tasks = await getTasks(interaction.guild.id, status);
+  let tasks = await getTasksByGuild(interaction.guild.id, status);
 
   if (status) {
     tasks = tasks.filter((t) => t.status === (status === "done"));
@@ -57,24 +58,24 @@ async function listTasks(_, interaction, options) {
   }
 
   const taskList = tasks
-    .map(
-      (t) => {
-        let dueDate = new Date(t.date + "T12:00:00Z");
-        dueDate.setHours(dueDate.getHours() + 5);
-        let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
-        return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F> - ${t.status ? lang.language.done : lang.language.pending}`;
-      }
-    )
+    .map((t) => {
+      let dueDate = new Date(t.date + "T12:00:00Z");
+      dueDate.setHours(dueDate.getHours() + 5);
+      let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
+      return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F> - ${
+        t.status ? lang.language.done : lang.language.pending
+      }`;
+    })
     .join("\n");
 
   const message = status
     ? lang.language.list_status
-      .replace("{0}", tasks.length)
-      .replace(
-        "{1}",
-        status === "done" ? lang.language.done : lang.language.pending
-      )
-      .replace("{2}", taskList)
+        .replace("{0}", tasks.length)
+        .replace(
+          "{1}",
+          status === "done" ? lang.language.done : lang.language.pending
+        )
+        .replace("{2}", taskList)
     : taskList;
 
   interaction.reply({ content: message });
@@ -176,11 +177,15 @@ async function config(_, interaction, options) {
     case "get":
       try {
         let config = await getConfig(interaction.guild.id);
-        let message = lang.language.getConfig
-          .replace("{0}", config.channel)
-          .replace("{1}", config.user)
+        let user = interaction.guild.members.cache.get(config.userID);
+        if (!user) {
+          user = await interaction.guild.members.fetch(config.userID);
+        }
+        let response = lang.language.getConfig  
+          .replace("{0}", `<#${config.channelID}>`)
+          .replace("{1}", user.user.tag)
           .replace("{2}", config.language);
-        interaction.reply(message);
+        interaction.reply(response);
       } catch (e) {
         console.error(e);
         interaction.reply(lang.language.configError);
@@ -188,13 +193,17 @@ async function config(_, interaction, options) {
       break;
 
     case "set":
-      let channel = options.getChannel("channel") ? options.getChannel("channel").id : "";
+      let channel = options.getChannel("channel")
+        ? options.getChannel("channel").id
+        : "";
       let user = options.getUser("user") ? options.getUser("user").id : "";
-      let language = options.getString("language") ? options.getString("language") : "";
+      let language = options.getString("language")
+        ? options.getString("language")
+        : "";
 
       if (channel || user || language) {
         updateConfig(interaction.guild.id, channel, user, language);
-        interaction.reply(lang.language.saved)
+        interaction.reply(lang.language.saved);
       } else {
         interaction.reply(lang.language.saveError);
       }
