@@ -1,8 +1,9 @@
 const { Express } = require("express");
+
 /**
- * Starts a server that keeps the application alive.
- * @param {Express} app
- * @param {number} port
+ * Starts a keep-alive server on the specified port.
+ * @param {Express} app - The Express app object.
+ * @param {number} port - The port number to listen on.
  */
 function keepAlive(app, port) {
     app.get("/", (_, res) => {
