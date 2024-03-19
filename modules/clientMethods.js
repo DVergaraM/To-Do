@@ -1,8 +1,7 @@
 const { Client } = require("discord.js");
 const commands = require("./commands.js");
-const { Database } = require("sqlite3");
 const request = require('request');
-const { getChannel, getUser, getLanguage, getTasks} = require("./methods.js");
+const { getChannel, getUser, getLanguage, getGuilds, getTasksByGuild, deleteTask } = require("./methods.js");
 const botCommands = new Map([
   ["add", commands.addTask],
   ["list", commands.listTasks],
@@ -18,43 +17,58 @@ const botCommands = new Map([
 /**
  * Sends reminders for tasks that are due today.
  * @param {Client} client - The Discord client object.
- * @param {Object} config - The configuration object.
  * @param {string} today - The current date in string format.
  * @param {boolean} isReminderTime - Indicates whether it's time to send reminders.
  * @returns {Promise<void>} - A promise that resolves when the reminders are sent.
  */
-async function reminder(client, config, today, isReminderTime) {
+async function reminder(client, today, isReminderTime) {
   if (isReminderTime) {
     try {
-      let lang = await getLanguage(config.guildID);
-      let channeldb = await getChannel(config.guildID);
-      let user = await getUser(config.guildID);
-      let tasks = await getTasks(config.guildID);
-      let tasksToSend = tasks.filter(t => new Date(t.date) >= new Date(today) && t.status === false);
-      let tasksToDelete = tasks.filter(t => new Date(t.date) < new Date(today) && t.status === true);
-      if (tasksToSend.length > 0) {
-        let tasksMessage = tasksToSend
-          .map((t) => {
-            let dueDate = new Date(t.date + "T12:00:00Z");
-            dueDate.setHours(dueDate.getHours() + 5);
-            let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
-            return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F>`;
-          })
-          .join("\n");
-        let channel = client.channels.cache.get(channeldb.channelID);
-        let message = lang.language.reminder.replace("{0}", tasksToSend.length);
-        await channel.send(`<@!${user.userID}> **${message}**\n: ${tasksMessage}`); // Esperar a que el mensaje se envíe
-      }
+      let guilds = await getGuilds();
+      for (let guild of guilds) {
 
-      for (let t of tasksToDelete) {
-        await deleteTask(config.guildID, t.id);
+        await sendReminders(client, guild, today);
       }
     } catch (error) {
       console.error(error);
     }
   }
 }
+/**
+ * Sends reminders for tasks based on the current date.
+ * @param {Client} client - The Discord client object.
+ * @param {string} guildID - The guild object.
+ * @param {string} today - The current date in string format.
+ * @returns {Promise<void>} - A promise that resolves when the reminders are sent.
+ */
+async function sendReminders(client, guildID, today) {
+  let lang = await getLanguage(guildID);
+  let channeldb = await getChannel(guildID);
+  let user = await getUser(guildID);
+  let tasks = await getTasksByGuild(guildID);
+  let tasksToSend = tasks.filter(t => new Date(t.date) >= new Date(today) && t.status === false);
+  let tasksToDelete = tasks.filter(t => new Date(t.date) < new Date(today) && t.status === true);
+  if (tasksToSend.length > 0) {
+    let tasksMessage = tasksToSend
+      .map((t) => {
+        let dueDate = new Date(t.date + "T12:00:00Z");
+        dueDate.setHours(dueDate.getHours() + 5);
+        let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
+        return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F>`;
+      })
+      .join("\n");
+    let channel = client.channels.cache.get(channeldb.channelID);
+    let message = lang.language.reminder.replace("{0}", tasksToSend.length);
+    await channel.send(`<@!${user.userID}> **${message}**:\n ${tasksMessage}`);
+    console.log(`Reminders sent for guild ${guildID}`)
+  } else {
+    console.log(`No reminders to send for guild ${guildID}`)
+  }
 
+  for (let t of tasksToDelete) {
+    await deleteTask(guildID, t.id);
+  }
+}
 /**
  * Handles the execution of commands received from the client.
  *

@@ -29,8 +29,8 @@ function ready(client, config) {
         setInterval(async () => {
             let date = new Date();
             let [today, condition] = isReminderTime(date, config);
-            await changeStatus(client, config.guildID);
-            await reminder(client, config, today, condition);
+            await changeStatus(client);
+            await reminder(client, today, condition);
         }, 60000);
     };
 }

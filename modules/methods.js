@@ -54,9 +54,9 @@ function isReminderTime(date, config) {
  * @param {string} guildID - The ID of the guild.
  * @returns {Promise<void>} - A promise that resolves when the status is changed.
  */
-async function changeStatus(client, guildID) {
-  const lang = await getLanguage(guildID);
-  const tasks = await getTasks(guildID);
+async function changeStatus(client) {
+  const lang = await getLanguage();
+  const tasks = await getTasksCount();
 
   const { language } = lang || {};
   const { defaultActivity, defaultActivityPlural, noTasksActivity } =
@@ -67,15 +67,9 @@ async function changeStatus(client, guildID) {
     return;
   }
 
-  // Filtrar las tareas pendientes
-  const pendingTasks = Array.isArray(tasks) ? tasks.filter(task => task.status === false) : [];
-
-  const taskCount = pendingTasks.length;
-
-  let activity;
-  if (taskCount > 1) {
-    activity = defaultActivityPlural.replace("{0}", taskCount);
-  } else if (taskCount === 1) {
+  if (tasks > 1) {
+    activity = defaultActivityPlural.replace("{0}", tasks);
+  } else if (tasks === 1) {
     activity = defaultActivity;
   } else {
     activity = noTasksActivity;
@@ -221,7 +215,7 @@ function createConfig(guildID, channelID, userID, language) {
  * @param {string} guildID - The ID of the guild.
  * @returns {Promise} - An object containing the code, guildID, and language.
  */
-async function getLanguage(guildID) {
+async function getLanguageById(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
@@ -253,20 +247,42 @@ async function getLanguage(guildID) {
   });
 }
 
-/**
- * Retrieves tasks from the server for a specific guild.
- * @param {string} guildID - The ID of the guild.
- * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
- */
-async function getTasks(guildID) {
+async function getLanguage() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/tasks/`,
+        url: `http://localhost:3000/language/`,
         json: true,
-        body: {
-          guildID: guildID,
-        },
+      },
+      async (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject(err);
+          return;
+        }
+        if (!body || !body.code || !body.language) {
+          console.error("Invalid language data:", body);
+          reject(new Error("Invalid language data"));
+          return;
+        }
+        resolve(body);
+      }
+    );
+  });
+
+}
+
+/**
+ * Retrieves tasks from the server for a specific guild.
+ * @param {string} userID - The ID of the user.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
+ */
+async function getTasksbyUser(userID) {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/tasks/user?id=${userID}`,
+        json: true,
       },
       (err, res, body) => {
         if (err) {
@@ -290,6 +306,71 @@ async function getTasks(guildID) {
           status: task.status,
         }));
         resolve(newBody);
+      }
+    );
+  });
+}
+
+async function getTasksByGuild(guildID) {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/tasks/guild?id=${guildID}`,
+        json: true,
+      },
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject({
+            code: 500,
+            error: err,
+          });
+          return;
+        }
+        if (!body || !Array.isArray(body.data)) {
+          resolve([]);
+          return;
+        }
+        let newBody = body.data.map((task) => ({
+          id: task.id,
+          task: task.task,
+          date: task.date,
+          guildID: task.guildID,
+          userID: task.userID,
+          status: task.status,
+        }));
+        resolve(newBody);
+      }
+    );
+  });
+
+}
+
+/**
+ * Retrieves the count of tasks from a remote server.
+ * @returns {Promise<number>} A promise that resolves to the count of tasks.
+ */
+async function getTasksCount() {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/tasks/count/`,
+        json: true,
+      },
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject({
+            code: 500,
+            error: err,
+          });
+          return;
+        }
+        if (!body.count) {
+          resolve(0)
+          return;
+        }
+        resolve(body.count);
       }
     );
   });
@@ -431,7 +512,7 @@ async function getUser(guildID) {
           reject(err);
           return;
         }
-        if (!body || !body.guildID || !body.userID) {
+        if (!body || !body.guildID) {
           console.error("Invalid user data:", body);
           reject(new Error("Invalid user data"));
           return;
@@ -439,7 +520,7 @@ async function getUser(guildID) {
         let newBody = {
           code: 200,
           guildID: body.guildID,
-          userID: body.userID,
+          userID: body.userID || 'No userID provided',
         };
         resolve(newBody);
       }
@@ -485,6 +566,25 @@ async function getChannel(guildID) {
   });
 }
 
+async function getGuilds() {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/config/guilds`,
+        json: true,
+      },
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject(err);
+          return;
+        }
+        resolve(body);
+      }
+    );
+  });
+}
+
 module.exports = {
   isReminderTime,
   changeStatus,
@@ -493,11 +593,14 @@ module.exports = {
   updateConfig,
   deleteConfig,
   getLanguage,
-  getTasks,
+  getTasksbyUser,
+  getTasksByGuild,
+  getTasksCount,
   addTask,
   deleteTask,
   updateTask,
   deleteGlobalCommand,
   getUser,
   getChannel,
+  getGuilds
 };
