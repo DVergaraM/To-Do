@@ -2,16 +2,19 @@ const {
   Client,
   CommandInteractionOptionResolver: Options,
 } = require("discord.js");
-const { Database } = require("sqlite3");
 
 const {
   updateConfig,
   getLanguage,
+  getLanguageById,
   updateTask,
   getConfig,
   deleteTask: deleteTaskAPI,
   addTask: addTaskAPI,
   getTasksByGuild,
+  getReminders,
+  addReminder,
+  deleteReminder,
 } = require("./methods");
 
 /**
@@ -62,20 +65,19 @@ async function listTasks(_, interaction, options) {
       let dueDate = new Date(t.date + "T12:00:00Z");
       dueDate.setHours(dueDate.getHours() + 5);
       let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
-      return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F> - ${
-        t.status ? lang.language.done : lang.language.pending
-      }`;
+      return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F> - ${t.status ? lang.language.done : lang.language.pending
+        }`;
     })
     .join("\n");
 
   const message = status
     ? lang.language.list_status
-        .replace("{0}", tasks.length)
-        .replace(
-          "{1}",
-          status === "done" ? lang.language.done : lang.language.pending
-        )
-        .replace("{2}", taskList)
+      .replace("{0}", tasks.length)
+      .replace(
+        "{1}",
+        status === "done" ? lang.language.done : lang.language.pending
+      )
+      .replace("{2}", taskList)
     : taskList;
 
   interaction.reply({ content: message });
@@ -124,7 +126,7 @@ async function help(client, interaction, _) {
 async function deleteTask(_, interaction, options) {
   let taskDelete = parseInt(options.getString("id"));
   let lang = await getLanguage(interaction.guild.id);
-  await deleteTaskAPI(interaction.guild.id, taskDelete);
+  await deleteTaskAPI(interaction.user.id, taskDelete);
   let message = lang.language.deleteTask.replace("{0}", taskDelete);
   interaction.reply(message);
 }
@@ -171,7 +173,7 @@ async function setUndone(_, interaction, options) {
  */
 async function config(_, interaction, options) {
   let command = options.getSubcommand();
-  let lang = await getLanguage(interaction.guild.id);
+  let lang = await getLanguageById(interaction.guild.id);
 
   switch (command) {
     case "get":
@@ -181,7 +183,7 @@ async function config(_, interaction, options) {
         if (!user) {
           user = await interaction.guild.members.fetch(config.userID);
         }
-        let response = lang.language.getConfig  
+        let response = lang.language.getConfig
           .replace("{0}", `<#${config.channelID}>`)
           .replace("{1}", user.user.tag)
           .replace("{2}", config.language);
@@ -202,7 +204,7 @@ async function config(_, interaction, options) {
         : "";
 
       if (channel || user || language) {
-        updateConfig(interaction.guild.id, channel, user, language);
+        await updateConfig(interaction.guild.id, channel, user, language);
         interaction.reply(lang.language.saved);
       } else {
         interaction.reply(lang.language.saveError);
@@ -215,6 +217,59 @@ async function config(_, interaction, options) {
   }
 }
 
+async function getRemindersByUser(userID) {
+  let reminders = await getReminders(userID);
+  return reminders;
+}
+
+/**
+ * Handles the reminder command.
+ *
+ * @param {Client} _ - Placeholder for the first parameter.
+ * @param {import("discord.js").Interaction} interaction - The interaction object.
+ * @param {Options} options - The options object.
+ * @returns {Promise<void>} A promise that resolves when the reminder command is handled.
+ */
+async function reminder(_, interaction, options) {
+  let command = options.getSubcommand();
+  let lang = await getLanguage(interaction.guild.id);
+
+  switch (command) {
+    case "list":
+      let reminders = await getRemindersByUser(interaction.user.id);
+      let reminderList = reminders.map((r) => {
+        return `- ${r.reminderID}. ${r.hour}:${r.minute}`;
+      }).join("\n");
+
+      let messageList = lang.language.reminderList
+        .replace("{0}", reminderList);
+      interaction.reply(messageList);
+      break;
+    case "add":
+      let time = options.getString("time");
+      let [hour, minute] = time.split(":");
+      let rValue = await addReminder(interaction.user.id, hour, minute);
+      if (rValue.error) {
+        interaction.reply(lang.language.reminderError);
+        return;
+      }
+      interaction.reply(lang.language.addReminder)
+      break;
+    case "delete":
+      let reminderID = parseInt(options.getString("id"));
+      let reValue = await deleteReminder(interaction.user.id, reminderID);
+      if (reValue.error) {
+        interaction.reply(lang.language.reminderError);
+        return;
+      }
+      interaction.reply(lang.language.removeReminder);
+      break;
+    default:
+      interaction.reply(lang.language.reminderCommands)
+
+  }
+}
+
 module.exports = {
   addTask,
   listTasks,
@@ -223,5 +278,6 @@ module.exports = {
   deleteTask,
   setDone,
   setUndone,
+  reminder,
   config,
 };

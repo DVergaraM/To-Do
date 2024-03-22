@@ -1,6 +1,4 @@
 const { Client, ActivityType } = require("discord.js");
-const { Database } = require("sqlite3");
-const config = require("../config.json");
 const request = require("request");
 
 /**
@@ -31,20 +29,34 @@ function getDate(date) {
  * Checks if the given date matches any of the configured reminder times.
  *
  * @param {Date} date - The date to check.
- * @param {Object} config - The configuration object containing reminder times.
- * @param {Object[]} config.recordatories - An array of reminder times.
- * @param {number} config.recordatories[].hour - The hour of the reminder.
- * @param {number} config.recordatories[].minute - The minute of the reminder.
  * @returns {Array<string, boolean>} - An array containing the current date and a boolean indicating if it matches any reminder time.
  */
-function isReminderTime(date, config) {
+async function isReminderTime(date) {
   let [today, localHour, utcMinutes] = getDate(date);
+  let users = await getUsers();
+  let recordatories = []
+  
+  for (let user of users) {
+    let reminders = await getReminders(user.userID) || [];
+    if (!Array.isArray(reminders) || reminders.code || reminders.error) continue;
+
+    let dateParts = today.split("-").map(part => parseInt(part, 10));
+    dateParts[1]--; // Adjust month index
+
+    for (let reminder of reminders) {
+      let timeParts = [reminder.hour, reminder.minute].map(part => parseInt(part, 10));
+      if (timeParts.some(isNaN)) continue;
+
+      let time = Date.parse(`${dateParts[0]}-${dateParts[1] + 1}-${dateParts[2]}T${timeParts[0]}:${timeParts[1]}:00Z`);
+      if (time >= date.getTime()) recordatories.push(reminder);
+    }
+  }
+
   return [
     today,
-    config.recordatories.some(
-      (recordatory) =>
-        localHour === recordatory.hour && utcMinutes === recordatory.minute
-    ),
+    recordatories.length > 0 && recordatories.some(
+      recordatory => localHour === recordatory.hour && utcMinutes === recordatory.minute
+    )
   ];
 }
 
@@ -183,7 +195,7 @@ function deleteConfig(guildID) {
  * @param {string} language - The language to be set in the configuration.
  * @returns {Map<string, any>} - The response body containing the code and message.
  */
-function createConfig(guildID, channelID, userID, language) {
+function createConfig(guildID) {
   request(
     {
       url: `http://localhost:3000/config/`,
@@ -191,9 +203,7 @@ function createConfig(guildID, channelID, userID, language) {
       json: true,
       body: {
         guildID: guildID,
-        channelID: channelID,
-        userID: userID,
-        language: language,
+        language: "en",
       },
     },
     (err, res, body) => {
@@ -277,7 +287,7 @@ async function getLanguage() {
  * @param {string} userID - The ID of the user.
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
  */
-async function getTasksbyUser(userID) {
+async function getTasksByUser(userID) {
   return new Promise((resolve, reject) => {
     request(
       {
@@ -413,18 +423,18 @@ function addTask(userID, guildID, task, date) {
 
 /**
  * Deletes a task from the server.
- * @param {string} guildID - The ID of the guild.
+ * @param {string} userID - The ID of the guild.
  * @param {string} task - The ID of the task to be deleted.
  * @returns {Object} - The response body containing the code and message.
  */
-async function deleteTask(guildID, task) {
+async function deleteTask(userID, task) {
   request(
     {
       url: `http://localhost:3000/tasks/`,
       method: "DELETE",
       json: true,
       body: {
-        guildID: guildID,
+        userID: userID,
         id: task,
       },
     },
@@ -488,6 +498,114 @@ async function deleteGlobalCommand(client, commandName) {
   } else {
     console.log(`Command ${commandName} not found.`);
   }
+}
+
+/**
+ * Retrieves a list of users from the server.
+ * @returns {Promise<Array>} A promise that resolves to an array of user objects.
+ */
+async function getUsers() {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/users/`,
+        json: true,
+      },
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject(err);
+          return;
+        }
+        resolve(body);
+      }
+    );
+  });
+}
+
+/**
+ * Retrieves reminders for a given user ID.
+ * @param {string} userID - The ID of the user.
+ * @returns {Promise<Array>} - A promise that resolves to an array of reminders.
+ */
+async function getReminders(userID) {
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/reminders?userID=${userID}`,
+        json: true,
+      },
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject(err);
+          return;
+        }
+        resolve(body);
+      }
+    );
+  });
+}
+
+/**
+ * Adds a reminder for a user.
+ * @param {string} userID - The ID of the user.
+ * @param {string} hour - The hour of the reminder.
+ * @param {string} minute - The minute of the reminder.
+ * @returns {Promise<any>} - A promise that resolves with the response body.
+ */
+async function addReminder(userID, hour, minute) {
+  request(
+    {
+      url: `http://localhost:3000/reminders/`,
+      method: "POST",
+      json: true,
+      body: {
+        userID: userID,
+        hour: hour,
+        minute: minute,
+      },
+    },
+    (err, res, body) => {
+      if (err) {
+        console.error("Error:", err, body.error);
+        return body;
+      }
+      return body;
+    }
+  );
+}
+
+/**
+ * Deletes a reminder for a specific user.
+ * @param {string} userID - The ID of the user.
+ * @param {number} reminderID - The ID of the reminder to be deleted.
+ * @returns {Promise<any>} - A promise that resolves with the response body if successful, or rejects with an error if unsuccessful.
+ */
+async function deleteReminder(userID, reminderID) {
+  request(
+    {
+      url: `http://localhost:3000/reminders/`,
+      method: "DELETE",
+      json: true,
+      body: {
+        userID: userID,
+        id: reminderID,
+      },
+    },
+    (err, res, body) => {
+      if (err) {
+        console.error("Error:", err);
+        return;
+      }
+      if (body.error) {
+        console.log(body.error)
+        return body;
+      }
+      console.log(body)
+      return body;
+    }
+  );
 }
 
 /**
@@ -566,6 +684,10 @@ async function getChannel(guildID) {
   });
 }
 
+/**
+ * Retrieves the list of guilds from the server.
+ * @returns {Promise<Array>} A promise that resolves to an array of guilds.
+ */
 async function getGuilds() {
   return new Promise((resolve, reject) => {
     request(
@@ -593,7 +715,8 @@ module.exports = {
   updateConfig,
   deleteConfig,
   getLanguage,
-  getTasksbyUser,
+  getLanguageById,
+  getTasksByUser,
   getTasksByGuild,
   getTasksCount,
   addTask,
@@ -602,5 +725,9 @@ module.exports = {
   deleteGlobalCommand,
   getUser,
   getChannel,
-  getGuilds
+  getGuilds,
+  getUsers,
+  getReminders,
+  addReminder,
+  deleteReminder
 };
