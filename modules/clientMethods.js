@@ -1,7 +1,13 @@
 const { Client } = require("discord.js");
 const commands = require("./commands.js");
-const request = require('request');
-const { getChannel, getUser, getLanguage, getGuilds, getTasksByGuild, deleteTask } = require("./methods.js");
+const {
+  getChannel,
+  getUser,
+  getLanguage,
+  getGuilds,
+  getTasksByGuild,
+  deleteTask,
+} = require("./methods.js");
 const botCommands = new Map([
   ["add", commands.addTask],
   ["list", commands.listTasks],
@@ -11,8 +17,8 @@ const botCommands = new Map([
   ["setdone", commands.setDone],
   ["setundone", commands.setUndone],
   ["config", commands.config],
+  ["reminder", commands.reminder],
 ]);
-
 
 /**
  * Sends reminders for tasks that are due today.
@@ -26,7 +32,6 @@ async function reminder(client, today, isReminderTime) {
     try {
       let guilds = await getGuilds();
       for (let guild of guilds) {
-
         await sendReminders(client, guild, today);
       }
     } catch (error) {
@@ -46,8 +51,12 @@ async function sendReminders(client, guildID, today) {
   let channeldb = await getChannel(guildID);
   let user = await getUser(guildID);
   let tasks = await getTasksByGuild(guildID);
-  let tasksToSend = tasks.filter(t => new Date(t.date) >= new Date(today) && t.status === false);
-  let tasksToDelete = tasks.filter(t => new Date(t.date) < new Date(today) && t.status === true);
+  let tasksToSend = tasks.filter(
+    (t) => new Date(t.date) >= new Date(today) && t.status === false
+  );
+  let tasksToDelete = tasks.filter(
+    (t) => new Date(t.date) < new Date(today) && t.status === true
+  );
   if (tasksToSend.length > 0) {
     let tasksMessage = tasksToSend
       .map((t) => {
@@ -60,9 +69,9 @@ async function sendReminders(client, guildID, today) {
     let channel = client.channels.cache.get(channeldb.channelID);
     let message = lang.language.reminder.replace("{0}", tasksToSend.length);
     await channel.send(`<@!${user.userID}> **${message}**:\n ${tasksMessage}`);
-    console.log(`Reminders sent for guild ${guildID}`)
+    console.log(`Reminders sent for guild ${guildID}`);
   } else {
-    console.log(`No reminders to send for guild ${guildID}`)
+    console.log(`No reminders to send for guild ${guildID}`);
   }
 
   for (let t of tasksToDelete) {
