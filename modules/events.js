@@ -8,15 +8,13 @@ const {
 } = require("./methods");
 
 /**
- * Handles the interactionCreate event.
- *
- * @param {Client} client - The Discord client.
- * @returns {Function} - The interactionCreate event handler.
+ * Handles the interaction create event.
+ * @returns {Function} The interaction create event handler.
  */
-function interactionCreate(client) {
+function interactionCreate() {
     return async (interaction) => {
         if (!interaction.isCommand()) return;
-        commandHandling(client, interaction);
+        commandHandling(interaction);
     };
 }
 

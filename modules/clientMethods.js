@@ -1,5 +1,5 @@
 const { Client } = require("discord.js");
-const commands = require("./commands.js");
+const Commands = require("./commands.js");
 const {
   getChannel,
   getUser,
@@ -8,6 +8,7 @@ const {
   getTasksByGuild,
   deleteTask,
 } = require("./methods.js");
+const commands = new Commands();
 const botCommands = new Map([
   ["add", commands.addTask],
   ["list", commands.listTasks],
@@ -85,10 +86,10 @@ async function sendReminders(client, guildID, today) {
  * @param {import('discord.js').Interaction} interaction - The interaction object representing the command.
  * @returns {void}
  */
-function commandHandling(client, interaction) {
+function commandHandling(interaction) {
   const { commandName, options } = interaction;
   if (!botCommands.has(commandName)) return;
-  botCommands.get(commandName)(client, interaction, options);
+  botCommands.get(commandName)(interaction, options);
 }
 module.exports = {
   reminder,

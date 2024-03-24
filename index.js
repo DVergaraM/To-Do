@@ -9,7 +9,7 @@ keepAlive(app, 3001);
 const client = new Client(clientOptions);
 
 client.once("ready", ready(client));
-client.on("interactionCreate", interactionCreate(client));
+client.on("interactionCreate", interactionCreate());
 client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete())
 client.login(config.token);
