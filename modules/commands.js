@@ -96,7 +96,8 @@ class Commands {
    * @param {Options} _ - Additional parameters (not used in this method).
    * @returns {Promise<void>} - A promise that resolves when the reply is sent.
    */
-  async ping(interaction, _) {
+
+  ping = async (interaction, _) => {
     interaction.reply(this.client.ws.ping + "ms", { ephemeral: true });
   }
 
@@ -106,7 +107,7 @@ class Commands {
    * @param {Options} _ - Additional parameters (not used in this function).
    * @returns {Promise<void>} - A promise that resolves when the help message is sent.
    */
-  async help(interaction, _) {
+  help = async (interaction, _) => {
     let lang = await getLanguage(interaction.guild.id);
     this.client.application.commands.fetch().then((commands) => {
       const commandList = commands
@@ -142,7 +143,7 @@ class Commands {
    */
   async setDone(interaction, options) {
     let taskId = parseInt(options.getString("id"));
-    await updateTask(taskId, "true");
+    await updateTask(interaction.user.id, taskId, "true");
     let lang = await getLanguage(interaction.guild.id);
     let message = lang.language.setDone.replace("{0}", taskId);
     interaction.reply(message);
@@ -179,9 +180,7 @@ class Commands {
         try {
           let config = await getConfig(interaction.guild.id);
           let user = interaction.guild.members.cache.get(config.userID);
-          if (!user) {
-            user = await interaction.guild.members.fetch(config.userID);
-          }
+          if (!user) user = await interaction.guild.members.fetch(config.userID);
           let response = lang.language.getConfig
             .replace("{0}", `<#${config.channelID}>`)
             .replace("{1}", user.user.tag)
@@ -197,7 +196,9 @@ class Commands {
         let channel = options.getChannel("channel")
           ? options.getChannel("channel").id
           : "";
-        let user = options.getUser("user") ? options.getUser("user").id : "";
+        let user = options.getUser("user")
+          ? options.getUser("user").id
+          : "";
         let language = options.getString("language")
           ? options.getString("language")
           : "";
@@ -205,9 +206,8 @@ class Commands {
         if (channel || user || language) {
           await updateConfig(interaction.guild.id, channel, user, language);
           interaction.reply(lang.language.saved);
-        } else {
-          interaction.reply(lang.language.saveError);
-        }
+        } else interaction.reply(lang.language.saveError);
+
         break;
 
       case "reset":
@@ -226,13 +226,15 @@ class Commands {
     return reminders;
   }
 
+
   /**
    * Handles the reminder command.
+   *
    * @param {import("discord.js").Interaction} interaction - The interaction object.
-   * @param {Options} options - The options object.
+   * @param {Options} options - The options for the command.
    * @returns {Promise<void>} - A promise that resolves when the reminder command is handled.
    */
-  async reminder(interaction, options) {
+  reminder = async (interaction, options) => {
     let command = options.getSubcommand();
     let lang = await getLanguage(interaction.guild.id);
 
@@ -244,31 +246,36 @@ class Commands {
             return `- ${r.reminderID}. ${r.hour}:${r.minute}`;
           })
           .join("\n");
-
+        if (reminders.length === 0) {
+          interaction.reply(lang.language.noReminders, {});
+          return;
+        }
         let messageList = lang.language.reminderList.replace("{0}", reminderList);
-        interaction.reply(messageList);
+        interaction.reply(messageList, {});
         break;
       case "add":
         let time = options.getString("time");
         let [hour, minute] = time.split(":");
         let rValue = await addReminder(interaction.user.id, hour, minute);
-        if (rValue.error) {
-          interaction.reply(lang.language.reminderError);
+        console.log(rValue)
+        if (rValue["error"]) {
+          interaction.reply(lang.language.reminderError, {});
           return;
         }
-        interaction.reply(lang.language.addReminder);
+        interaction.reply(lang.language.addReminder, {});
         break;
       case "delete":
-        let reminderID = parseInt(options.getString("id"));
+        let reminderID = options.getString("id");
         let reValue = await deleteReminder(interaction.user.id, reminderID);
-        if (reValue.error) {
-          interaction.reply(lang.language.reminderError);
-          return;
+        console.log(reValue)
+        if (reValue["error"]) {
+          interaction.reply(reValue["error"], {});
+        } else {
+          interaction.reply(lang.language.removeReminder, {});
         }
-        interaction.reply(lang.language.removeReminder);
         break;
       default:
-        interaction.reply(lang.language.reminderCommands);
+        interaction.reply(lang.language.reminderCommands, {});
     }
   }
 }
