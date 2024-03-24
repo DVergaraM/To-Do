@@ -32,7 +32,7 @@ function getDate(date) {
  * @returns {Array<string, boolean>} - An array containing the current date and a boolean indicating if it matches any reminder time.
  */
 async function isReminderTime(date) {
-  let [today, localHour, utcMinutes] = getDate(date);
+  let [today, ..._] = getDate(date);
   let users = await getUsers();
   let recordatories = []
 
@@ -40,29 +40,30 @@ async function isReminderTime(date) {
     let reminders = await getReminders(user.userID) || [];
     if (!Array.isArray(reminders) || reminders.code || reminders.error) continue;
 
-    let dateParts = today.split("-").map(part => parseInt(part, 10));
-    dateParts[1]--; // Adjust month index
-
     for (let reminder of reminders) {
       let timeParts = [reminder.hour, reminder.minute].map(part => parseInt(part, 10));
       if (timeParts.some(isNaN)) continue;
-      let datePart0 = dateParts[0];
-      let datePart1 = (dateParts[1] + 1).toString().padStart(2, "0");
-      let datePart2 = dateParts[2].toString().padStart(2, "0");
-      let timePart0 = timeParts[0];
-      let timePart1 = timeParts[1].toString().padStart(2, "0")
-      let time = Date.parse(`${datePart0}-${datePart1}-${datePart2}T${timePart0}:${timePart1}:00Z`);
-
-      let currentTime = date.getTime();
-      let oneHourInMilliseconds = 60 * 1000;
-      // Solo considera los recordatorios que están dentro de una hora de la hora actual
-      if (time >= currentTime && time <= currentTime + oneHourInMilliseconds) recordatories.push(reminder);
+      let currentHour = date.getUTCHours() - 5;
+      let currentMinute = date.getUTCMinutes();
+      let reminderHour = parseInt(timeParts[0], 10);
+      let reminderMinute = parseInt(timeParts[1], 10);
+      console.log(`${currentHour}:${currentMinute}`)
+      if ((reminderHour === currentHour && reminderMinute === currentMinute) ||
+        (reminderHour === currentHour + 1 && reminderMinute === currentMinute - 59))
+        recordatories.push(reminder);
     }
   }
   return [
     today,
     recordatories.length > 0 && recordatories.some(
-      recordatory => localHour === recordatory.hour && utcMinutes === recordatory.minute
+      recordatory => {
+        let recordatoryHour = parseInt(recordatory.hour, 10);
+        let recordatoryMinute = parseInt(recordatory.minute, 10);
+        let currentHour = date.getUTCHours() - 5;
+        let currentMinute = date.getUTCMinutes();
+        return (recordatoryHour === currentHour && recordatoryMinute === currentMinute) ||
+          (recordatoryHour === currentHour + 1 && recordatoryMinute === currentMinute - 59);
+      }
     )
   ];
 }
@@ -264,6 +265,11 @@ async function getLanguageById(guildID) {
   });
 }
 
+/**
+ * Retrieves the language data from the server.
+ * @returns {Promise<Object>} A promise that resolves with the language data.
+ * @throws {Error} If there is an error retrieving the language data or if the data is invalid.
+ */
 async function getLanguage() {
   return new Promise((resolve, reject) => {
     request(
@@ -434,7 +440,7 @@ function addTask(userID, guildID, task, date) {
  * @param {string} task - The ID of the task to be deleted.
  * @returns {Object} - The response body containing the code and message.
  */
-async function deleteTask(userID, task) {
+async function deleteTaskByUser(userID, task) {
   request(
     {
       url: `http://localhost:3000/tasks/`,
@@ -459,6 +465,31 @@ async function deleteTask(userID, task) {
   );
 }
 
+/**
+ * Deletes a task with the specified task ID.
+ * @param {string} taskID - The ID of the task to delete.
+ * @returns {Promise<any>} - A promise that resolves with the response body if successful, or rejects with an error if unsuccessful.
+ */
+async function deleteTask(taskID) {
+  request(
+    {
+      url: `http://localhost:3000/tasks/`,
+      method: "DELETE",
+      json: true,
+      body: {
+        id: taskID,
+      }
+    },
+    (err, res, body) => {
+      if (err) {
+        console.error("Error:", err);
+        return;
+      }
+      return body;
+    }
+  );
+}
+
 
 /**
  * Updates the status of a task.
@@ -466,7 +497,7 @@ async function deleteTask(userID, task) {
  * @param {boolean} done - The new status of the task.
  * @returns {Promise<any>} - A promise that resolves with the updated task.
  */
-async function updateTask(taskID, done) {
+async function updateTask(userID, taskID, done) {
   request(
     {
       url: `http://localhost:3000/tasks/${taskID}`,
@@ -474,6 +505,7 @@ async function updateTask(taskID, done) {
       json: true,
       body: {
         status: done,
+        userID: userID,
       },
     },
     (err, res, body) => {
@@ -481,6 +513,7 @@ async function updateTask(taskID, done) {
         console.error("Error:", err);
         return;
       }
+      console.log(body)
       return body;
     }
   );
@@ -562,25 +595,28 @@ async function getReminders(userID) {
  * @returns {Promise<any>} - A promise that resolves with the response body.
  */
 async function addReminder(userID, hour, minute) {
-  request(
-    {
-      url: `http://localhost:3000/reminders/`,
-      method: "POST",
-      json: true,
-      body: {
-        userID: userID,
-        hour: hour,
-        minute: minute,
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/reminders/`,
+        method: "POST",
+        json: true,
+        body: {
+          userID: userID,
+          hour: hour,
+          minute: minute,
+        },
       },
-    },
-    (err, res, body) => {
-      if (err) {
-        console.error("Error:", err, body.error);
-        return body;
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject(err);
+          return;
+        }
+        resolve(body);
       }
-      return body;
-    }
-  );
+    );
+  });
 }
 
 /**
@@ -590,29 +626,31 @@ async function addReminder(userID, hour, minute) {
  * @returns {Promise<any>} - A promise that resolves with the response body if successful, or rejects with an error if unsuccessful.
  */
 async function deleteReminder(userID, reminderID) {
-  request(
-    {
-      url: `http://localhost:3000/reminders/`,
-      method: "DELETE",
-      json: true,
-      body: {
-        userID: userID,
-        id: reminderID,
+  return new Promise((resolve, reject) => {
+    request(
+      {
+        url: `http://localhost:3000/reminders/`,
+        method: "DELETE",
+        json: true,
+        body: {
+          userID: userID,
+          id: reminderID,
+        },
       },
-    },
-    (err, res, body) => {
-      if (err) {
-        console.error("Error:", err);
-        return;
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          reject(err);
+          return;
+        }
+        if (body.error) {
+          resolve(body)
+        }
+        //console.log(body)
+        resolve(body);
       }
-      if (body.error) {
-        console.log(body.error)
-        return body;
-      }
-      console.log(body)
-      return body;
-    }
-  );
+    );
+  })
 }
 
 /**
@@ -727,6 +765,7 @@ module.exports = {
   getTasksByGuild,
   getTasksCount,
   addTask,
+  deleteTaskByUser,
   deleteTask,
   updateTask,
   deleteGlobalCommand,

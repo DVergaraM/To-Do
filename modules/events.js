@@ -9,12 +9,13 @@ const {
 
 /**
  * Handles the interaction create event.
+ * @param {Client} client - The Discord client object.
  * @returns {Function} The interaction create event handler.
  */
-function interactionCreate() {
+function interactionCreate(client) {
     return async (interaction) => {
         if (!interaction.isCommand()) return;
-        commandHandling(interaction);
+        commandHandling(client, interaction);
     };
 }
 

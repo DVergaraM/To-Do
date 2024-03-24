@@ -8,19 +8,6 @@ const {
   getTasksByGuild,
   deleteTask,
 } = require("./methods.js");
-const commands = new Commands();
-const botCommands = new Map([
-  ["add", commands.addTask],
-  ["list", commands.listTasks],
-  ["ping", commands.ping],
-  ["help", commands.help],
-  ["delete", commands.deleteTask],
-  ["setdone", commands.setDone],
-  ["setundone", commands.setUndone],
-  ["config", commands.config],
-  ["reminder", commands.reminder],
-]);
-
 /**
  * Sends reminders for tasks that are due today.
  * @param {Client} client - The Discord client object.
@@ -47,17 +34,13 @@ async function reminder(client, today, isReminderTime) {
  * @param {string} today - The current date in string format.
  * @returns {Promise<void>} - A promise that resolves when the reminders are sent.
  */
-async function sendReminders(client, guildID, today) {
+async function sendReminders(client, guildID) {
   let lang = await getLanguage(guildID);
   let channeldb = await getChannel(guildID);
   let user = await getUser(guildID);
   let tasks = await getTasksByGuild(guildID);
-  let tasksToSend = tasks.filter(
-    (t) => new Date(t.date) >= new Date(today) && t.status === false
-  );
-  let tasksToDelete = tasks.filter(
-    (t) => new Date(t.date) < new Date(today) && t.status === true
-  );
+  let tasksToSend = tasks.filter((t) => t.status === false);
+
   if (tasksToSend.length > 0) {
     let tasksMessage = tasksToSend
       .map((t) => {
@@ -76,7 +59,7 @@ async function sendReminders(client, guildID, today) {
   }
 
   for (let t of tasksToDelete) {
-    await deleteTask(guildID, t.id);
+    await deleteTask(t.id);
   }
 }
 /**
@@ -86,8 +69,20 @@ async function sendReminders(client, guildID, today) {
  * @param {import('discord.js').Interaction} interaction - The interaction object representing the command.
  * @returns {void}
  */
-function commandHandling(interaction) {
+function commandHandling(client, interaction) {
   const { commandName, options } = interaction;
+  const commands = new Commands(client);
+  const botCommands = new Map([
+    ["add", commands.addTask],
+    ["list", commands.listTasks],
+    ["ping", commands.ping],
+    ["help", commands.help],
+    ["delete", commands.deleteTask],
+    ["setdone", commands.setDone],
+    ["setundone", commands.setUndone],
+    ["config", commands.config],
+    ["reminder", commands.reminder],
+  ]);
   if (!botCommands.has(commandName)) return;
   botCommands.get(commandName)(interaction, options);
 }
