@@ -35,7 +35,7 @@ async function isReminderTime(date) {
   let [today, localHour, utcMinutes] = getDate(date);
   let users = await getUsers();
   let recordatories = []
-  
+
   for (let user of users) {
     let reminders = await getReminders(user.userID) || [];
     if (!Array.isArray(reminders) || reminders.code || reminders.error) continue;
@@ -46,12 +46,19 @@ async function isReminderTime(date) {
     for (let reminder of reminders) {
       let timeParts = [reminder.hour, reminder.minute].map(part => parseInt(part, 10));
       if (timeParts.some(isNaN)) continue;
+      let datePart0 = dateParts[0];
+      let datePart1 = (dateParts[1] + 1).toString().padStart(2, "0");
+      let datePart2 = dateParts[2].toString().padStart(2, "0");
+      let timePart0 = timeParts[0];
+      let timePart1 = timeParts[1].toString().padStart(2, "0")
+      let time = Date.parse(`${datePart0}-${datePart1}-${datePart2}T${timePart0}:${timePart1}:00Z`);
 
-      let time = Date.parse(`${dateParts[0]}-${dateParts[1] + 1}-${dateParts[2]}T${timeParts[0]}:${timeParts[1]}:00Z`);
-      if (time >= date.getTime()) recordatories.push(reminder);
+      let currentTime = date.getTime();
+      let oneHourInMilliseconds = 60 * 1000;
+      // Solo considera los recordatorios que están dentro de una hora de la hora actual
+      if (time >= currentTime && time <= currentTime + oneHourInMilliseconds) recordatories.push(reminder);
     }
   }
-
   return [
     today,
     recordatories.length > 0 && recordatories.some(

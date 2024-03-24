@@ -65,20 +65,17 @@ async function listTasks(_, interaction, options) {
       let dueDate = new Date(t.date + "T12:00:00Z");
       dueDate.setHours(dueDate.getHours() + 5);
       let epochTimestamp = Math.floor(dueDate.getTime() / 1000);
-      return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F> - ${t.status ? lang.language.done : lang.language.pending
-        }`;
+      return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F> - **${t.status ? lang.language.done : lang.language.pending
+        }**`;
     })
     .join("\n");
-
+  let rStatus = status === "done" ? lang.language.done : lang.language.pending;
   const message = status
     ? lang.language.list_status
       .replace("{0}", tasks.length)
-      .replace(
-        "{1}",
-        status === "done" ? lang.language.done : lang.language.pending
-      )
+      .replace("{1}", rStatus)
       .replace("{2}", taskList)
-    : taskList;
+    : lang.language.list.replace("{0}", taskList);
 
   interaction.reply({ content: message });
 }
@@ -237,12 +234,13 @@ async function reminder(_, interaction, options) {
   switch (command) {
     case "list":
       let reminders = await getRemindersByUser(interaction.user.id);
-      let reminderList = reminders.map((r) => {
-        return `- ${r.reminderID}. ${r.hour}:${r.minute}`;
-      }).join("\n");
+      let reminderList = reminders
+        .map((r) => {
+          return `- ${r.reminderID}. ${r.hour}:${r.minute}`;
+        })
+        .join("\n");
 
-      let messageList = lang.language.reminderList
-        .replace("{0}", reminderList);
+      let messageList = lang.language.reminderList.replace("{0}", reminderList);
       interaction.reply(messageList);
       break;
     case "add":
@@ -253,7 +251,7 @@ async function reminder(_, interaction, options) {
         interaction.reply(lang.language.reminderError);
         return;
       }
-      interaction.reply(lang.language.addReminder)
+      interaction.reply(lang.language.addReminder);
       break;
     case "delete":
       let reminderID = parseInt(options.getString("id"));
@@ -265,8 +263,7 @@ async function reminder(_, interaction, options) {
       interaction.reply(lang.language.removeReminder);
       break;
     default:
-      interaction.reply(lang.language.reminderCommands)
-
+      interaction.reply(lang.language.reminderCommands);
   }
 }
 
