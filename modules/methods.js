@@ -1,5 +1,6 @@
 const { Client, ActivityType } = require("discord.js");
-const { getReminders, getTasksCount } = require("./requests/task");
+const { getReminders } = require("./requests/reminder");
+const { getTasksCount } = require("./requests/task");
 const { getLanguage } = require("./requests/language");
 const { getUsers } = require("./requests/others");
 
