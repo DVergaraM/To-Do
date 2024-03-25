@@ -1,13 +1,30 @@
 const { Client } = require("discord.js");
 const Commands = require("./commands.js");
-const {
-  getChannel,
-  getUser,
-  getLanguage,
-  getGuilds,
-  getTasksByGuild,
-  deleteTask,
-} = require("./methods.js");
+const { getLanguage } = require("./requests/language");
+const { deleteTask, getTasksByGuild } = require("./requests/task");
+const { getGuilds, getChannel, getUser } = require("./requests/others");
+
+/**
+ * Creates a map of bot commands.
+ *
+ * @param {Client} client - The Discord client object.
+ * @returns {Map<string, Function>}  - A map of bot commands.
+ */
+function botCommandsMap(client) {
+  const commands = new Commands(client);
+  return {
+    add: commands.addTask,
+    list: commands.listTasks,
+    ping: commands.ping,
+    remove: commands.deleteTask,
+    help: commands.help,
+    setdone: commands.setDone,
+    setundone: commands.setUndone,
+    config: commands.config,
+    reminder: commands.reminder,
+  };
+}
+
 /**
  * Sends reminders for tasks that are due today.
  * @param {Client} client - The Discord client object.
@@ -71,18 +88,7 @@ async function sendReminders(client, guildID) {
  */
 function commandHandling(client, interaction) {
   const { commandName, options } = interaction;
-  const commands = new Commands(client);
-  const botCommands = new Map([
-    ["add", commands.addTask],
-    ["list", commands.listTasks],
-    ["ping", commands.ping],
-    ["help", commands.help],
-    ["delete", commands.deleteTask],
-    ["setdone", commands.setDone],
-    ["setundone", commands.setUndone],
-    ["config", commands.config],
-    ["reminder", commands.reminder],
-  ]);
+  const botCommands = botCommandsMap(client);
   if (!botCommands.has(commandName)) return;
   botCommands.get(commandName)(interaction, options);
 }

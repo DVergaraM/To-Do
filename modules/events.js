@@ -1,11 +1,7 @@
 const { Client, GatewayIntentBits, Guild } = require("discord.js");
 const { reminder, commandHandling } = require("./clientMethods");
-const {
-    isReminderTime,
-    changeStatus,
-    createConfig,
-    deleteConfig,
-} = require("./methods");
+const { isReminderTime, changeStatus } = require("./methods");
+const { createConfig, deleteConfig } = require("./requests/config");
 
 /**
  * Handles the interaction create event.
@@ -13,10 +9,10 @@ const {
  * @returns {Function} The interaction create event handler.
  */
 function interactionCreate(client) {
-    return async (interaction) => {
-        if (!interaction.isCommand()) return;
-        commandHandling(client, interaction);
-    };
+  return async (interaction) => {
+    if (!interaction.isCommand()) return;
+    commandHandling(client, interaction);
+  };
 }
 
 /**
@@ -25,15 +21,15 @@ function interactionCreate(client) {
  * @returns {Function} - The callback function to be executed when the bot is ready.
  */
 function ready(client) {
-    return async () => {
-        console.log(`Bot is ready as: ${client.user.tag}`);
-        setInterval(async () => {
-            let date = new Date();
-            let [today, condition] = await isReminderTime(date);
-            await changeStatus(client);
-            await reminder(client, today, condition);
-        }, 60000);
-    };
+  return async () => {
+    console.log(`Bot is ready as: ${client.user.tag}`);
+    setInterval(async () => {
+      let date = new Date();
+      let [today, condition] = await isReminderTime(date);
+      await changeStatus(client);
+      await reminder(client, today, condition);
+    }, 60000);
+  };
 }
 
 /**
@@ -41,9 +37,9 @@ function ready(client) {
  * @returns {Function} The guild create event handler function.
  */
 function guildCreate() {
-    return (guild) => {
-        createConfig(guild.id);
-    };
+  return (guild) => {
+    createConfig(guild.id);
+  };
 }
 
 /**
@@ -51,9 +47,9 @@ function guildCreate() {
  * @param {Guild} guild - The guild object.
  */
 function guildDelete() {
-    return (guild) => {
-        deleteConfig(guild.id);
-    };
+  return (guild) => {
+    deleteConfig(guild.id);
+  };
 }
 /**
  * Options for the Discord client.
@@ -68,12 +64,12 @@ function guildDelete() {
  * @type {ClientOptions}
  */
 const clientOptions = {
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 };
 module.exports = {
-    ready,
-    interactionCreate,
-    clientOptions,
-    guildCreate,
-    guildDelete,
+  ready,
+  interactionCreate,
+  clientOptions,
+  guildCreate,
+  guildDelete,
 };
