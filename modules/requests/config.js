@@ -9,11 +9,8 @@ async function getConfig(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/config/`,
+        url: `http://localhost:3000/config?guildID=${guildID}`,
         json: true,
-        body: {
-          guildID: guildID,
-        },
       },
       (err, res, body) => {
         if (err) {
@@ -43,17 +40,25 @@ async function getConfig(guildID) {
  * @returns {Map<string, any>} - The updated configuration object.
  */
 async function updateConfig(guildID, channelID, userID, language) {
+  let url = `http://localhost:3000/config?guildID=${guildID}`;
+
+  if (channelID !== "") {
+    url += `&channelID=${channelID}`;
+  }
+
+  if (userID !== "") {
+    url += `&userID=${userID}`;
+  }
+
+  if (language !== "") {
+    url += `&language=${language}`;
+  }
+
   request(
     {
-      url: `http://localhost:3000/config/`,
+      url: url,
       method: "PATCH",
       json: true,
-      body: {
-        guildID: guildID,
-        channelID: channelID,
-        userID: userID,
-        language: language,
-      },
     },
     (err, res, body) => {
       if (err) {
@@ -77,12 +82,9 @@ async function updateConfig(guildID, channelID, userID, language) {
 function deleteConfig(guildID) {
   request(
     {
-      url: `http://localhost:3000/config/`,
+      url: `http://localhost:3000/config?guildID=${guildID}`,
       method: "DELETE",
       json: true,
-      body: {
-        guildID: guildID,
-      },
     },
     (err, res, body) => {
       if (err) {

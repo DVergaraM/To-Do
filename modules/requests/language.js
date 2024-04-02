@@ -7,13 +7,15 @@ const request = require("request");
  */
 async function getLanguageById(guildID) {
   return new Promise((resolve, reject) => {
+    let url = `http://localhost:3000/language`;
+    if (guildID != "") {
+      url += `?guildID=${guildID}`;
+    }
     request(
       {
-        url: `http://localhost:3000/language/`,
+        url: url,
+        method: "GET",
         json: true,
-        body: {
-          guildID: guildID,
-        },
       },
       async (err, res, body) => {
         if (err) {

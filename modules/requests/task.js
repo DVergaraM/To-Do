@@ -6,10 +6,16 @@ const request = require("request");
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
  */
 async function getTasksByUser(userID) {
+  let url = `http://localhost:3000/tasks/user`;
+  if (userID != "") {
+    console.log("Invalid user ID");
+    return [];
+  }
+  url += `?id=${userID}`;
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/tasks/user?id=${userID}`,
+        url: url,
         json: true,
       },
       (err, res, body) => {
@@ -39,11 +45,22 @@ async function getTasksByUser(userID) {
   });
 }
 
+/**
+ * Retrieves tasks by guild ID.
+ * @param {string} guildID - The ID of the guild.
+ * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
+ */
 async function getTasksByGuild(guildID) {
+  let url = `http://localhost:3000/tasks/guild`;
+  if (guildID != "") {
+    console.log("Invalid guild ID");
+    return [];
+  }
+  url += `?id=${guildID}`;
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/tasks/guild?id=${guildID}`,
+        url: url,
         json: true,
       },
       (err, res, body) => {

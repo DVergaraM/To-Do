@@ -1,3 +1,5 @@
+const request = require("request");
+
 /**
  * Retrieves reminders for a given user ID.
  * @param {string} userID - The ID of the user.
@@ -5,9 +7,14 @@
  */
 async function getReminders(userID) {
   return new Promise((resolve, reject) => {
+    let url = `http://localhost:3000/reminders`;
+    if (userID != "") {
+      url += `?userID=${userID}`;
+    }
     request(
       {
-        url: `http://localhost:3000/reminders?userID=${userID}`,
+        url: url,
+        method: "GET",
         json: true,
       },
       (err, res, body) => {

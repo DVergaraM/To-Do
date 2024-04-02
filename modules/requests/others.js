@@ -31,7 +31,7 @@ async function getUsers() {
         url: `http://localhost:3000/users/`,
         json: true,
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
@@ -53,13 +53,10 @@ async function getUser(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/config/`,
-        json: true,
-        body: {
-          guildID: guildID,
-        },
+        url: `http://localhost:3000/config?guildID=${guildID}`,
+        json: true
       },
-      async (err, res, body) => {
+      async (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
@@ -91,13 +88,10 @@ async function getChannel(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/config/`,
+        url: `http://localhost:3000/config?guildID=${guildID}`,
         json: true,
-        body: {
-          guildID: guildID,
-        },
       },
-      async (err, res, body) => {
+      async (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
@@ -130,7 +124,7 @@ async function getGuilds() {
         url: `http://localhost:3000/config/guilds`,
         json: true,
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
