@@ -12,17 +12,17 @@ const { getGuilds, getChannel, getUser } = require("./requests/others");
  */
 function botCommandsMap(client) {
   const commands = new Commands(client);
-  return {
-    add: commands.addTask,
-    list: commands.listTasks,
-    ping: commands.ping,
-    remove: commands.deleteTask,
-    help: commands.help,
-    setdone: commands.setDone,
-    setundone: commands.setUndone,
-    config: commands.config,
-    reminder: commands.reminder,
-  };
+  return new Map([
+    ["add", commands.addTask],
+    ["list", commands.listTasks],
+    ["ping", commands.ping],
+    ["remove", commands.deleteTask],
+    ["help", commands.help],
+    ["setdone", commands.setDone],
+    ["setundone", commands.setUndone],
+    ["config", commands.config],
+    ["reminder", commands.reminder],
+  ]);
 }
 
 /**
@@ -53,11 +53,24 @@ async function reminder(client, today, isReminderTime) {
  */
 async function sendReminders(client, guildID) {
   let lang = await getLanguage(guildID);
-  let channeldb = await getChannel(guildID);
+  let channelInDB = await getChannel(guildID);
   let user = await getUser(guildID);
   let tasks = await getTasksByGuild(guildID);
   let tasksToSend = tasks.filter((t) => t.status === false);
-
+  let tasksToDelete =
+    tasksToSend.filter((t) => t.date < today) && t.status === true;
+  let guild = client.guilds.cache.get(guildID);
+  if (!guild) {
+    console.log(lang.language.guildNotFound.replace("{0}", guildID));
+    return;
+  }
+  let channel = guild.channels.cache.get(channelInDB.channelID);
+  if (!channel) {
+    console.log(
+      lang.language.channelNotFound.replace("{0}", channelInDB.channelID)
+    );
+    return;
+  }
   if (tasksToSend.length > 0) {
     let tasksMessage = tasksToSend
       .map((t) => {
@@ -67,12 +80,12 @@ async function sendReminders(client, guildID) {
         return `- ${t.id}. ${t.task} | <t:${epochTimestamp}:F>`;
       })
       .join("\n");
-    let channel = client.channels.cache.get(channeldb.channelID);
+
     let message = lang.language.reminder.replace("{0}", tasksToSend.length);
     await channel.send(`<@!${user.userID}> **${message}**:\n ${tasksMessage}`);
-    console.log(`Reminders sent for guild ${guildID}`);
+    console.log(`Reminders sent for guild "${guild.name}"`);
   } else {
-    console.log(`No reminders to send for guild ${guildID}`);
+    console.log(`No reminders to send for guild "${guild.name}"`);
   }
 
   for (let t of tasksToDelete) {
