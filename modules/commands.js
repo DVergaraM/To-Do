@@ -40,7 +40,7 @@ class Commands {
     const { language } = lang || {};
     addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
     let message = language["add"].replace("{0}", task).replace("{1}", due_date);
-    interaction.reply(message);
+    interaction.reply(message, {});
   }
 
   /**
@@ -117,7 +117,7 @@ class Commands {
         })
         .join("\n");
       let message = lang.language.help.replace("{0}", commandList);
-      interaction.reply(message);
+      interaction.reply(message, {});
     });
   };
 
@@ -133,7 +133,7 @@ class Commands {
     let lang = await getLanguage(interaction.guild.id);
     await deleteTaskAPI(interaction.user.id, taskDelete);
     let message = lang.language.deleteTask.replace("{0}", taskDelete);
-    interaction.reply(message);
+    interaction.reply(message, {});
   }
 
   /**
@@ -147,7 +147,7 @@ class Commands {
     await updateTask(interaction.user.id, taskId, "true");
     let lang = await getLanguage(interaction.guild.id);
     let message = lang.language.setDone.replace("{0}", taskId);
-    interaction.reply(message);
+    interaction.reply(message, {});
   }
 
   /**
@@ -162,7 +162,7 @@ class Commands {
     let lang = await getLanguage(interaction.guild.id);
     await updateTask(taskId, "false");
     let message = lang.language.setUndone.replace("{0}", taskId);
-    interaction.reply(message);
+    interaction.reply(message, {});
   }
 
   /**
@@ -187,10 +187,10 @@ class Commands {
             .replace("{0}", `<#${config.channelID}>`)
             .replace("{1}", user.user.tag)
             .replace("{2}", config.language);
-          interaction.reply(response);
+          interaction.reply(response, {});
         } catch (e) {
           console.error(e);
-          interaction.reply(lang.language.configError);
+          interaction.reply(lang.language.configError, {});
         }
         break;
 
@@ -205,13 +205,14 @@ class Commands {
 
         if (channel || user || language) {
           await updateConfig(interaction.guild.id, channel, user, language);
-          interaction.reply(lang.language.saved);
-        } else interaction.reply(lang.language.saveError);
+          interaction.reply(lang.language.saved, {});
+        } else interaction.reply(lang.language.saveError, {});
 
         break;
 
       case "reset":
-        updateConfig(interaction.guild.id, "", "", "en");
+        await updateConfig(interaction.guild.id, "", "", "en");
+        interaction.reply(lang.language.configReset, {});
         break;
     }
   }
