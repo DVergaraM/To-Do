@@ -5,4 +5,4 @@ config.json
 package-lock.json
 *.txt
 README.md
-/verilog
+*.py
