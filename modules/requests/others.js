@@ -54,7 +54,7 @@ async function getUser(guildID) {
     request(
       {
         url: `http://localhost:3000/config?guildID=${guildID}`,
-        json: true
+        json: true,
       },
       async (err, _res, body) => {
         if (err) {

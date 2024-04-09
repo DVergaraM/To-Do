@@ -16,7 +16,7 @@ function botCommandsMap(client) {
     ["add", commands.addTask],
     ["list", commands.listTasks],
     ["ping", commands.ping],
-    ["remove", commands.deleteTask],
+    ["delete", commands.deleteTask],
     ["help", commands.help],
     ["setdone", commands.setDone],
     ["setundone", commands.setUndone],
