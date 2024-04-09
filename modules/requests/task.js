@@ -51,12 +51,7 @@ async function getTasksByUser(userID) {
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
  */
 async function getTasksByGuild(guildID) {
-  let url = `http://localhost:3000/tasks/guild`;
-  if (guildID != "") {
-    console.log("Invalid guild ID");
-    return [];
-  }
-  url += `?id=${guildID}`;
+  let url = `http://localhost:3000/tasks/guild?id=${guildID}`;
   return new Promise((resolve, reject) => {
     request(
       {
@@ -192,23 +187,32 @@ async function deleteTaskByUser(userID, task) {
  * @returns {Promise<any>} - A promise that resolves with the response body if successful, or rejects with an error if unsuccessful.
  */
 async function deleteTask(taskID) {
-  request(
-    {
-      url: `http://localhost:3000/tasks/`,
-      method: "DELETE",
-      json: true,
-      body: {
-        id: taskID,
-      },
-    },
-    (err, res, body) => {
-      if (err) {
-        console.error("Error:", err);
-        return;
-      }
-      return body;
+  return new Promise((resolve, reject) => {
+    if (!taskID) {
+      reject({
+        code: 400,
+        error: "Invalid task ID",
+      });
+      return;
     }
-  );
+    request(
+      {
+        url: `http://localhost:3000/tasks/`,
+        method: "DELETE",
+        json: true,
+        body: {
+          id: taskID,
+        },
+      },
+      (err, res, body) => {
+        if (err) {
+          console.error("Error:", err);
+          return;
+        }
+        resolve(body);
+      }
+    );
+  });
 }
 
 /**
