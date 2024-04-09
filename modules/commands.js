@@ -6,7 +6,7 @@ const {
 const { getLanguage, getLanguageById } = require("./requests/language");
 const {
   addTask: addTaskAPI,
-  deleteTask: deleteTaskAPI,
+  deleteTaskByUser: deleteTaskAPI,
   getTasksByGuild,
   updateTask,
 } = require("./requests/task");
@@ -38,7 +38,7 @@ class Commands {
     let task = options.getString("tarea");
     let lang = await getLanguage(interaction.guild.id);
     const { language } = lang || {};
-    addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
+    await addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
     let message = language["add"].replace("{0}", task).replace("{1}", due_date);
     interaction.reply(message, {});
   }
@@ -129,7 +129,7 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves once the task is deleted.
    */
   async deleteTask(interaction, options) {
-    let taskDelete = parseInt(options.getString("id"));
+    let taskDelete = options.getString("id");
     let lang = await getLanguage(interaction.guild.id);
     await deleteTaskAPI(interaction.user.id, taskDelete);
     let message = lang.language.deleteTask.replace("{0}", taskDelete);
