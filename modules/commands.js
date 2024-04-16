@@ -7,8 +7,8 @@ const { getLanguage, getLanguageById } = require("./requests/language");
 const {
   addTask: addTaskAPI,
   deleteTaskByUser: deleteTaskAPI,
-  getTasksByGuild,
   updateTask,
+  getTasksByUser,
 } = require("./requests/task");
 const { getConfig, updateConfig } = require("./requests/config");
 const {
@@ -16,6 +16,8 @@ const {
   addReminder,
   deleteReminder,
 } = require("./requests/reminder");
+
+const { multipleReplaceForLanguage } = require("./methods");
 
 class Commands {
   /**
@@ -39,7 +41,11 @@ class Commands {
     let lang = await getLanguage(interaction.guild.id);
     const { language } = lang || {};
     await addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
-    let message = language["add"].replace("{0}", task).replace("{1}", due_date);
+    let message = multipleReplaceForLanguage(
+      ["{0}", "{1}"],
+      [task, due_date],
+      language["add"]
+    );
     interaction.reply(message, {});
   }
 
@@ -58,8 +64,7 @@ class Commands {
       console.error("Invalid language data:", lang?.language);
       return;
     }
-
-    let tasks = await getTasksByGuild(interaction.guild.id, status);
+    let tasks = await getTasksByUser(interaction.user.id, status);
 
     if (status) {
       tasks = tasks.filter((t) => t.status === (status === "done"));
@@ -81,12 +86,12 @@ class Commands {
       .join("\n");
     let rStatus =
       status === "done" ? lang.language.done : lang.language.pending;
-    const message = status
-      ? lang.language.list_status
-          .replace("{0}", tasks.length)
-          .replace("{1}", rStatus)
-          .replace("{2}", taskList)
-      : lang.language.list.replace("{0}", taskList);
+    let mess = multipleReplaceForLanguage(
+      ["{0}", "{1}", "{2}"],
+      [tasks.length, rStatus, taskList],
+      lang.language.list_status
+    );
+    const message = status ? mess : lang.language.list.replace("{0}", taskList);
 
     interaction.reply({ content: message });
   }
@@ -183,10 +188,11 @@ class Commands {
           let user = interaction.guild.members.cache.get(config.userID);
           if (!user)
             user = await interaction.guild.members.fetch(config.userID);
-          let response = lang.language.getConfig
-            .replace("{0}", `<#${config.channelID}>`)
-            .replace("{1}", user.user.tag)
-            .replace("{2}", config.language);
+          let response = multipleReplaceForLanguage(
+            ["{0}", "{1}", "{2}"],
+            [config.channelID, user.user.tag, config.language],
+            lang.language.getConfig
+          );
           interaction.reply(response, {});
         } catch (e) {
           console.error(e);

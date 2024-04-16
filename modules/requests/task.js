@@ -18,7 +18,7 @@ async function getTasksByUser(userID) {
         url: url,
         json: true,
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject({
@@ -58,7 +58,7 @@ async function getTasksByGuild(guildID) {
         url: url,
         json: true,
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject({
@@ -96,7 +96,7 @@ async function getTasksCount() {
         url: `http://localhost:3000/tasks/count/`,
         json: true,
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject({
@@ -136,7 +136,7 @@ function addTask(userID, guildID, task, date) {
         date: date,
       },
     },
-    (err, res, body) => {
+    (err, _res, body) => {
       if (err) {
         console.error("Error:", err);
         return;
@@ -167,7 +167,7 @@ async function deleteTaskByUser(userID, task) {
         id: task,
       },
     },
-    (err, res, body) => {
+    (err, _res, body) => {
       if (err) {
         console.error("Error:", err);
         return;
@@ -204,7 +204,7 @@ async function deleteTask(taskID) {
           id: taskID,
         },
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           return;
@@ -232,7 +232,7 @@ async function updateTask(userID, taskID, done) {
         userID: userID,
       },
     },
-    (err, res, body) => {
+    (err, _res, body) => {
       if (err) {
         console.error("Error:", err);
         return;

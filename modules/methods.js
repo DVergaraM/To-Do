@@ -140,7 +140,26 @@ async function changeStatus(client) {
   client.user.setActivity(activity, { type: ActivityType.Watching });
 }
 
+/**
+ * Replaces multiple occurrences of strings in a given text.
+ *
+ * @param {string[]} toReplace - An array of strings to be replaced.
+ * @param {string[]} replaceWith - An array of strings to replace the corresponding strings in `toReplace`.
+ * @param {string} text - The text in which the replacements will be made.
+ * @returns {string} The modified text with the replacements.
+ * @throws {Error} If the length of `toReplace` and `replaceWith` arrays are not the same.
+ */
+function multipleReplaceForLanguage(toReplace, replaceWith, text) {
+  if (toReplace.length !== replaceWith.length)
+    throw new Error("The length of the arrays must be the same.");
+  for (let i = 0; i < toReplace.length; i++) {
+    text = text.replace(toReplace[i], replaceWith[i]);
+  }
+  return text;
+}
+
 module.exports = {
   isReminderTime,
   changeStatus,
+  multipleReplaceForLanguage
 };
