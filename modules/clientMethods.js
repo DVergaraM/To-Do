@@ -51,7 +51,7 @@ async function reminder(client, today, isReminderTime) {
  * @param {string} today - The current date in string format.
  * @returns {Promise<void>} - A promise that resolves when the reminders are sent.
  */
-async function sendReminders(client, guildID) {
+async function sendReminders(client, guildID, today) {
   let lang = await getLanguage(guildID);
   let channelInDB = await getChannel(guildID);
   let user = await getUser(guildID);
