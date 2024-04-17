@@ -40,7 +40,7 @@ async function reminder(client, today, isReminderTime) {
         await sendReminders(client, guild, today);
       }
     } catch (error) {
-      console.error(error);
+      client.channels.cache.get("1230190057684734124").send(error);
     }
   }
 }
@@ -61,12 +61,12 @@ async function sendReminders(client, guildID, today) {
     tasksToSend.filter((t) => t.date < today) && t.status === true;
   let guild = client.guilds.cache.get(guildID);
   if (!guild) {
-    console.log(lang.language.guildNotFound.replace("{0}", guildID));
+    client.channels.cache.get("1230190057684734124").send(lang.language.guildNotFound.replace("{0}", guildID));
     return;
   }
   let channel = guild.channels.cache.get(channelInDB.channelID);
   if (!channel) {
-    console.log(
+    client.channels.cache.get("1230190057684734124").send(
       lang.language.channelNotFound.replace("{0}", channelInDB.channelID)
     );
     return;
@@ -83,9 +83,9 @@ async function sendReminders(client, guildID, today) {
 
     let message = lang.language.reminder.replace("{0}", tasksToSend.length);
     await channel.send(`<@!${user.userID}> **${message}**:\n ${tasksMessage}`);
-    console.log(`Reminders sent for guild "${guild.name}"`);
+    client.channels.cache.get("1230190057684734124").send(`Reminders sent for guild "${guild.name}"`);
   } else {
-    console.log(`No reminders to send for guild "${guild.name}"`);
+    client.channels.cache.get("1230190057684734124").send(`No reminders to send for guild "${guild.name}"`);
   }
 
   for (let t of tasksToDelete) {

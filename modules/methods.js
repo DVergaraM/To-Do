@@ -114,7 +114,7 @@ async function changeStatus(client) {
   const { defaultActivity, defaultActivityPlural, noTasksActivity } = language;
 
   if (!defaultActivity || !defaultActivityPlural || !noTasksActivity) {
-    console.error("Invalid language data:", language);
+    client.channels.cache.get("1230190057684734124").send(`Invalid language data: ${language}`);
     return;
   }
 
@@ -145,8 +145,14 @@ async function changeStatus(client) {
  * @throws {Error} If the length of `toReplace` and `replaceWith` arrays are not the same.
  */
 function multipleReplaceForLanguage(toReplace, replaceWith, text) {
-  if (toReplace.length !== replaceWith.length)
+  if (toReplace.length !== replaceWith.length) {
+    client.channels.cache.get("1230190057684734124").send(
+      "The length of the arrays must be the same:",
+      toReplace,
+      replaceWith
+    );
     throw new Error("The length of the arrays must be the same.");
+  }
   for (let i = 0; i < toReplace.length; i++) {
     text = text.replace(toReplace[i], replaceWith[i]);
   }

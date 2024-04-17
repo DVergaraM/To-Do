@@ -14,9 +14,9 @@ async function deleteGlobalCommand(client, commandName) {
 
   if (command) {
     await client.application.commands.delete(command.id);
-    console.log(`Command ${commandName} deleted.`);
+    client.channels.cache.get("1230190057684734124").send(`Command ${commandName} deleted.`)
   } else {
-    console.log(`Command ${commandName} not found.`);
+    client.channels.cache.get("1230190057684734124").send(`Command ${commandName} not found.`)
   }
 }
 
