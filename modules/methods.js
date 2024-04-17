@@ -45,19 +45,14 @@ function getDate(date) {
  * @returns {Array<string, boolean>} - An array containing the current date and a boolean indicating if it matches any reminder time.
  */
 async function isReminderTime(date) {
-  const [today] = getDate(date);
+  const [today, currentHour, currentMinute] = getDate(date);
   const users = await getUsers();
-  const currentHour = convertUTCtoLocal(date.getUTCHours());
-  const currentMinute = addZerosToMinutes(date.getUTCMinutes());
 
   const recordatories = [];
 
   for (const user of users) {
     const reminders = (await getReminders(user.userID)) || [];
-    if (!Array.isArray(reminders) || reminders.code || reminders.error)
-      continue;
-
-    for (const reminder of reminders) {
+    for (const reminder of reminders.data) {
       const [reminderHour, reminderMinute] = [
         reminder.hour,
         reminder.minute,
@@ -161,5 +156,5 @@ function multipleReplaceForLanguage(toReplace, replaceWith, text) {
 module.exports = {
   isReminderTime,
   changeStatus,
-  multipleReplaceForLanguage
+  multipleReplaceForLanguage,
 };
