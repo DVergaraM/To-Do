@@ -64,8 +64,7 @@ class Commands {
       console.error("Invalid language data:", lang?.language);
       return;
     }
-    let tasks = await getTasksByUser(interaction.user.id, status);
-
+    let tasks = await getTasksByUser(interaction.user.id);
     if (status) {
       tasks = tasks.filter((t) => t.status === (status === "done"));
     }
@@ -247,7 +246,7 @@ class Commands {
     switch (command) {
       case "list":
         let reminders = await this.getRemindersByUser(interaction.user.id);
-        let reminderList = reminders
+        let reminderList = reminders.data
           .map((r) => {
             return `- ${r.reminderID}. ${r.hour}:${r.minute}`;
           })
@@ -266,7 +265,6 @@ class Commands {
         let time = options.getString("time");
         let [hour, minute] = time.split(":");
         let rValue = await addReminder(interaction.user.id, hour, minute);
-        console.log(rValue);
         if (rValue["error"]) {
           interaction.reply(lang.language.reminderError, {});
           return;
@@ -276,7 +274,6 @@ class Commands {
       case "delete":
         let reminderID = options.getString("id");
         let reValue = await deleteReminder(interaction.user.id, reminderID);
-        console.log(reValue);
         if (reValue["error"]) {
           interaction.reply(reValue["error"], {});
         } else {

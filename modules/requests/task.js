@@ -7,7 +7,7 @@ const request = require("request");
  */
 async function getTasksByUser(userID) {
   let url = `http://localhost:3000/tasks/user`;
-  if (userID != "") {
+  if (userID == "") {
     console.log("Invalid user ID");
     return [];
   }
