@@ -22,7 +22,10 @@ function interactionCreate(client) {
  */
 function ready(client) {
   return async () => {
-    client.channels.cache.get("1230190057684734124").send("Bot is ready.")
+    console.log("Bot is ready.")
+    client.channels.cache
+      .get("1230190057684734124")
+      .send({ content: "Bot is ready." });
     setInterval(async () => {
       let date = new Date();
       let [today, condition] = await isReminderTime(date);
