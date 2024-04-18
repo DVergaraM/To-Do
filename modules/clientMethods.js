@@ -91,7 +91,6 @@ async function sendReminders(client, guildID, today) {
     await channel.send({
       content: `<@!${user.userID}> **${message}**:\n ${tasksMessage}`,
     });
-    console.log(tasksMessage);
     client.channels.cache
       .get("1230190057684734124")
       .send({ content: `Reminders sent for guild "${guild.name}"` });

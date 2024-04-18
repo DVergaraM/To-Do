@@ -12,7 +12,7 @@ async function getConfig(guildID) {
         url: `http://localhost:3000/config?guildID=${guildID}`,
         json: true,
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
@@ -60,7 +60,7 @@ async function updateConfig(guildID, channelID, userID, language) {
       method: "PATCH",
       json: true,
     },
-    (err, res, body) => {
+    (err, _res, body) => {
       if (err) {
         console.error("Error:", err);
         return;
@@ -86,7 +86,7 @@ function deleteConfig(guildID) {
       method: "DELETE",
       json: true,
     },
-    (err, res, body) => {
+    (err, _res, body) => {
       if (err) {
         console.error("Error:", err);
         return;
@@ -119,7 +119,7 @@ function createConfig(guildID) {
         language: "en",
       },
     },
-    (err, res, body) => {
+    (err, _res, body) => {
       if (err) {
         console.error("Error:", err);
         return;

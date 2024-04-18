@@ -17,7 +17,7 @@ async function getReminders(userID) {
         method: "GET",
         json: true,
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
@@ -49,7 +49,7 @@ async function addReminder(userID, hour, minute) {
           minute: minute,
         },
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
@@ -79,7 +79,7 @@ async function deleteReminder(userID, reminderID) {
           id: reminderID,
         },
       },
-      (err, res, body) => {
+      (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);

@@ -17,7 +17,7 @@ async function getLanguageById(guildID) {
         method: "GET",
         json: true,
       },
-      async (err, res, body) => {
+      async (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
@@ -51,7 +51,7 @@ async function getLanguage() {
         url: `http://localhost:3000/language/`,
         json: true,
       },
-      async (err, res, body) => {
+      async (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
           reject(err);
