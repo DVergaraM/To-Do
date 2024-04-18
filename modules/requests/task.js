@@ -237,7 +237,6 @@ async function updateTask(userID, taskID, done) {
         console.error("Error:", err);
         return;
       }
-      console.log(body);
       return body;
     }
   );

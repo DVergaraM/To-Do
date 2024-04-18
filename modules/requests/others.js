@@ -14,9 +14,13 @@ async function deleteGlobalCommand(client, commandName) {
 
   if (command) {
     await client.application.commands.delete(command.id);
-    client.channels.cache.get("1230190057684734124").send(`Command ${commandName} deleted.`)
+    client.channels.cache
+      .get("1230190057684734124")
+      .send({ content: `Command ${commandName} deleted.` });
   } else {
-    client.channels.cache.get("1230190057684734124").send(`Command ${commandName} not found.`)
+    client.channels.cache
+      .get("1230190057684734124")
+      .send({ content: `Command ${commandName} not found.` });
   }
 }
 
