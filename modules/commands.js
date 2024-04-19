@@ -82,7 +82,7 @@ class Commands {
     if (tasks.length === 0) {
       embed.setColor("RED");
       embed.setDescription(
-        `No tasks found for user ${interaction.user.username}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
+        `No tasks found for user ${interaction.user.globalName}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
       );
       this.client.channels.cache
         .get("1230190057684734124")
@@ -197,6 +197,14 @@ class Commands {
     let command = options.getSubcommand();
     let lang = await getLanguageById(interaction.guild.id);
 
+    if (interaction.user.id !== interaction.guild.ownerId) {
+      let embed = new EmbedBuilder();
+      embed.setTitle("Config");
+      embed.setColor("RED");
+      embed.setDescription(lang.language.ownerError);
+      interaction.reply({ embeds: [embed] });
+      return;
+    }
     switch (command) {
       case "get":
         try {
@@ -283,7 +291,7 @@ class Commands {
         if (reminders.length === 0) {
           embed.setColor("RED");
           embed.setDescription(
-            `No reminders found for user ${interaction.user.username}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
+            `No reminders found for user ${interaction.user.globalName}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
           );
           this.client.channels.cache
             .get("1230190057684734124")
