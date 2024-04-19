@@ -1,4 +1,4 @@
-const { Client, ActivityType } = require("discord.js");
+const { Client, ActivityType, EmbedBuilder } = require("discord.js");
 const { getReminders } = require("./requests/reminder");
 const { getTasksCount } = require("./requests/task");
 const { getLanguage } = require("./requests/language");
@@ -147,12 +147,16 @@ async function changeStatus(client) {
  * @throws {Error} If the length of `toReplace` and `replaceWith` arrays are not the same.
  */
 function multipleReplaceForLanguage(toReplace, replaceWith, text) {
+  let embed = new EmbedBuilder();
+  embed.setTitle("Error");
   if (toReplace.length !== replaceWith.length) {
-    client.channels.cache
-      .get("1230190057684734124")
-      .send({
-        content: `The length of the arrays must be the same: ${toReplace} ${replaceWith}`,
-      });
+    embed.setColor("Red");
+    embed.setDescription(
+      `The length of the arrays must be the same: ${toReplace.join(
+        ", "
+      )} | ${replaceWith.join(", ")}`
+    );
+    client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
     throw new Error("The length of the arrays must be the same.");
   }
   for (let i = 0; i < toReplace.length; i++) {

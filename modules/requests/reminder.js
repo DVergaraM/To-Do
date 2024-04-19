@@ -88,7 +88,6 @@ async function deleteReminder(userID, reminderID) {
         if (body.error) {
           resolve(body);
         }
-        //console.log(body)
         resolve(body);
       }
     );

@@ -1,4 +1,9 @@
-const { Client, GatewayIntentBits, Guild } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  Guild,
+  EmbedBuilder,
+} = require("discord.js");
 const { reminder, commandHandling } = require("./clientMethods");
 const { isReminderTime, changeStatus } = require("./methods");
 const { createConfig, deleteConfig } = require("./requests/config");
@@ -22,10 +27,12 @@ function interactionCreate(client) {
  */
 function ready(client) {
   return async () => {
-    console.log("Bot is ready.")
-    client.channels.cache
-      .get("1230190057684734124")
-      .send({ content: "Bot is ready." });
+    console.log("Bot is ready.");
+    let embed = new EmbedBuilder();
+    embed.setColor("DarkAqua");
+    embed.setTitle("Bot is ready.");
+    embed.setTimestamp();
+    client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
     setInterval(async () => {
       let date = new Date();
       let [today, condition] = await isReminderTime(date);
@@ -47,7 +54,7 @@ function guildCreate() {
 
 /**
  * Deletes the configuration for a guild.
- * @param {Guild} guild - The guild object.
+ * @returns {Function} The guild delete event handler function.
  */
 function guildDelete() {
   return (guild) => {

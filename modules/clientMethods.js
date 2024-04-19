@@ -1,4 +1,4 @@
-const { Client } = require("discord.js");
+const { Client, EmbedBuilder } = require("discord.js");
 const Commands = require("./commands.js");
 const { getLanguage } = require("./requests/language");
 const { deleteTask, getTasksByGuild } = require("./requests/task");
@@ -41,7 +41,9 @@ async function reminder(client, today, isReminderTime) {
       }
     } catch (error) {
       console.error("Error:", error);
-      client.channels.cache.get("1230190057684734124").send({ content: error.message });
+      client.channels.cache
+        .get("1230190057684734124")
+        .send({ content: error.message });
     }
   }
 }
@@ -58,23 +60,27 @@ async function sendReminders(client, guildID, today) {
   let user = await getUser(guildID);
   let tasks = await getTasksByGuild(guildID);
   let tasksToSend = tasks.filter((t) => t.status === false);
-  let tasksToDelete =
-    tasksToSend.filter((t) => t.date < today && t.status === true);
+  let tasksToDelete = tasksToSend.filter(
+    (t) => t.date < today && t.status === true
+  );
   let guild = client.guilds.cache.get(guildID);
+  let embed = new EmbedBuilder();
+  embed.setTitle("Reminders");
   if (!guild) {
-    client.channels.cache
-      .get("1230190057684734124")
-      .send({ content: lang.language.guildNotFound.replace("{0}", guildID) });
+    embed
+      .setColor("Red")
+      .setDescription(lang.language.guildNotFound.replace("{0}", guildID));
+    client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
     return;
   }
   let channel = guild.channels.cache.get(channelInDB.channelID);
   if (!channel) {
-    client.channels.cache.get("1230190057684734124").send({
-      content: lang.language.channelNotFound.replace(
-        "{0}",
-        channelInDB.channelID
-      ),
-    });
+    embed
+      .setColor("Red")
+      .setDescription(
+        lang.language.channelNotFound.replace("{0}", channelInDB.channelID)
+      );
+    client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
     return;
   }
   if (tasksToSend.length > 0) {
@@ -91,13 +97,15 @@ async function sendReminders(client, guildID, today) {
     await channel.send({
       content: `<@!${user.userID}> **${message}**:\n ${tasksMessage}`,
     });
-    client.channels.cache
-      .get("1230190057684734124")
-      .send({ content: `Reminders sent for guild "${guild.name}"` });
+    embed.setColor("Green");
+    embed.setDescription(
+      `Reminders sent for guild "${guild.name}"\n${tasksMessage}`
+    );
+    client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
   } else {
-    client.channels.cache
-      .get("1230190057684734124")
-      .send({ content: `No reminders to send for guild "${guild.name}"` });
+    embed.setColor("Red");
+    embed.setDescription(`No reminders to send for guild "${guild.name}"`);
+    client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
   }
 
   for (let t of tasksToDelete) {

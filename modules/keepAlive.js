@@ -6,7 +6,7 @@ const { Express } = require("express");
  * @param {number} port - The port number to listen on.
  */
 function keepAlive(app, port) {
-  app.get("/", (_, res) => {
+  app.get("/", (_req, res) => {
     res.send("Hello World", 5, 5);
   });
   app.listen(port);

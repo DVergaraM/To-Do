@@ -1,6 +1,7 @@
 const {
   Client,
   CommandInteractionOptionResolver: Options,
+  EmbedBuilder,
 } = require("discord.js");
 
 const { getLanguage, getLanguageById } = require("./requests/language");
@@ -59,8 +60,17 @@ class Commands {
   async listTasks(interaction, options) {
     const status = options.getString("status");
     const lang = await getLanguage(interaction.guild.id);
+    let embed = new EmbedBuilder();
+    embed.setTitle("Commands");
 
     if (!lang?.language?.list_status) {
+      embed.setColor("RED");
+      embed.setDescription(
+        `Invalid language data: ${lang?.language}\nIn guild: ${interaction.guild.name}(ID: ${interaction.guild.id})`
+      );
+      this.client.channels.cache
+        .get("1230190057684734124")
+        .send({ embeds: [embed] });
       console.error("Invalid language data:", lang?.language);
       return;
     }
@@ -70,6 +80,13 @@ class Commands {
     }
 
     if (tasks.length === 0) {
+      embed.setColor("RED");
+      embed.setDescription(
+        `No tasks found for user ${interaction.user.username}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
+      );
+      this.client.channels.cache
+        .get("1230190057684734124")
+        .send({ embeds: [embed] });
       return interaction.reply(lang.language.no_tasks);
     }
 
@@ -211,7 +228,16 @@ class Commands {
         if (channel || user || language) {
           await updateConfig(interaction.guild.id, channel, user, language);
           interaction.reply(lang.language.saved, {});
-        } else interaction.reply(lang.language.saveError, {});
+        } else {
+          let embed = new EmbedBuilder();
+          embed.setTitle("Config");
+          embed.setColor("RED");
+          embed.setDescription(`Error: ${lang.language.saveError}`);
+          this.client.channels.cache
+            .get("1230190057684734124")
+            .send({ embeds: [embed] });
+          interaction.reply(lang.language.saveError, {});
+        }
 
         break;
 
@@ -243,6 +269,9 @@ class Commands {
     let command = options.getSubcommand();
     let lang = await getLanguage(interaction.guild.id);
 
+    let embed = new EmbedBuilder();
+    embed.setTitle("Reminder");
+
     switch (command) {
       case "list":
         let reminders = await this.getRemindersByUser(interaction.user.id);
@@ -252,6 +281,13 @@ class Commands {
           })
           .join("\n");
         if (reminders.length === 0) {
+          embed.setColor("RED");
+          embed.setDescription(
+            `No reminders found for user ${interaction.user.username}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
+          );
+          this.client.channels.cache
+            .get("1230190057684734124")
+            .send({ embeds: [embed] });
           interaction.reply(lang.language.noReminders, {});
           return;
         }
@@ -275,6 +311,11 @@ class Commands {
         let reminderID = options.getString("id");
         let reValue = await deleteReminder(interaction.user.id, reminderID);
         if (reValue["error"]) {
+          embed.setColor("RED");
+          embed.setDescription(`Error: ${reValue["error"]}`);
+          this.client.channels.cache
+            .get("1230190057684734124")
+            .send({ embeds: [embed] });
           interaction.reply(reValue["error"], {});
         } else {
           interaction.reply(lang.language.removeReminder, {});
