@@ -33,7 +33,7 @@ async function getUsers() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/users/`,
+        url: `https://to-do-api-pqi0.onrender.com/users/`,
         json: true,
       },
       (err, _res, body) => {
@@ -58,7 +58,7 @@ async function getUser(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/config?guildID=${guildID}`,
+        url: `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`,
         json: true,
       },
       async (err, _res, body) => {
@@ -93,7 +93,7 @@ async function getChannel(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/config?guildID=${guildID}`,
+        url: `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`,
         json: true,
       },
       async (err, _res, body) => {
@@ -126,7 +126,7 @@ async function getGuilds() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/config/guilds`,
+        url: `https://to-do-api-pqi0.onrender.com/config/guilds`,
         json: true,
       },
       (err, _res, body) => {

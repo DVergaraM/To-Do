@@ -8,7 +8,7 @@ const request = require("request");
  */
 async function getReminders(userID) {
   return new Promise((resolve, reject) => {
-    let url = `https://to-do-api-9r0i.onrender.com/reminders`;
+    let url = `https://to-do-api-pqi0.onrender.com/reminders`;
     if (userID != "") {
       url += `?userID=${userID}`;
     }
@@ -41,7 +41,7 @@ async function addReminder(userID, hour, minute) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/reminders/`,
+        url: `https://to-do-api-pqi0.onrender.com/reminders/`,
         method: "POST",
         json: true,
         body: {
@@ -72,7 +72,7 @@ async function deleteReminder(userID, reminderID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/reminders/`,
+        url: `https://to-do-api-pqi0.onrender.com/reminders/`,
         method: "DELETE",
         json: true,
         body: {

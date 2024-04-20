@@ -7,7 +7,7 @@ const request = require("request");
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
  */
 async function getTasksByUser(userID) {
-  let url = `https://to-do-api-9r0i.onrender.com/tasks/user`;
+  let url = `https://to-do-api-pqi0.onrender.com/tasks/user`;
   if (userID == "") {
     console.log("Invalid user ID");
     return [];
@@ -52,7 +52,7 @@ async function getTasksByUser(userID) {
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
  */
 async function getTasksByGuild(guildID) {
-  let url = `https://to-do-api-9r0i.onrender.com/tasks/guild?id=${guildID}`;
+  let url = `https://to-do-api-pqi0.onrender.com/tasks/guild?id=${guildID}`;
   return new Promise((resolve, reject) => {
     request(
       {
@@ -94,7 +94,7 @@ async function getTasksCount() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/tasks/count/`,
+        url: `https://to-do-api-pqi0.onrender.com/tasks/count/`,
         json: true,
       },
       (err, _res, body) => {
@@ -127,7 +127,7 @@ async function getTasksCount() {
 function addTask(userID, guildID, task, date) {
   request(
     {
-      url: `https://to-do-api-9r0i.onrender.com/tasks/`,
+      url: `https://to-do-api-pqi0.onrender.com/tasks/`,
       method: "POST",
       json: true,
       body: {
@@ -160,7 +160,7 @@ function addTask(userID, guildID, task, date) {
 async function deleteTaskByUser(userID, task) {
   request(
     {
-      url: `https://to-do-api-9r0i.onrender.com/tasks/`,
+      url: `https://to-do-api-pqi0.onrender.com/tasks/`,
       method: "DELETE",
       json: true,
       body: {
@@ -198,7 +198,7 @@ async function deleteTask(taskID) {
     }
     request(
       {
-        url: `https://to-do-api-9r0i.onrender.com/tasks/`,
+        url: `https://to-do-api-pqi0.onrender.com/tasks/`,
         method: "DELETE",
         json: true,
         body: {
@@ -225,7 +225,7 @@ async function deleteTask(taskID) {
 async function updateTask(userID, taskID, done) {
   request(
     {
-      url: `https://to-do-api-9r0i.onrender.com/tasks/${taskID}`,
+      url: `https://to-do-api-pqi0.onrender.com/tasks/${taskID}`,
       method: "PATCH",
       json: true,
       body: {
