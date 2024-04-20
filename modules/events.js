@@ -8,6 +8,8 @@ const { reminder, commandHandling } = require("./clientMethods");
 const { isReminderTime, changeStatus } = require("./methods");
 const { createConfig, deleteConfig } = require("./requests/config");
 const { keepAlive } = require("./keepAlive");
+const { request } = require("http");
+const { exit } = require("process");
 
 /**
  * Handles the interaction create event.
@@ -21,6 +23,21 @@ function interactionCreate(client) {
   };
 }
 
+function isAPION() {
+  request(
+    {
+      url: "https://to-do-api-9r0i.onrender.com/",
+    },
+    (err, res, body) => {
+      if (err) {
+        console.error("Error:", err);
+        return false;
+      }
+      return true;
+    }
+  );
+}
+
 /**
  * Function that returns a callback function to be executed when the bot is ready.
  * @param {Client} client - The Discord client object.
@@ -30,7 +47,12 @@ function interactionCreate(client) {
  */
 function ready(client, app, port) {
   return async () => {
+    if (!isAPION()) {
+      console.log("API is not online.");
+      exit(1);
+    }
     console.log("Bot is ready.");
+    keepAlive(app, port);
     let embed = new EmbedBuilder();
     embed.setColor("DarkAqua");
     embed.setTitle("Bot is ready.");
@@ -42,7 +64,6 @@ function ready(client, app, port) {
       await changeStatus(client);
       await reminder(client, today, condition);
     }, 60000);
-    keepAlive(app, port);
   };
 }
 
