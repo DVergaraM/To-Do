@@ -18,4 +18,4 @@ client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete());
 client.login(process.env["token"]);
 
-http.createServer(app).listen(3001);
+http.createServer(app);
