@@ -11,10 +11,12 @@ const {
 } = require("./modules/events");
 
 const client = new Client(clientOptions);
-
-keepAlive(app, 3001);
+app.get("/", (_req, res) => {
+  res.send("Hello World");
+});
 client.once("ready", ready(client));
 client.on("interactionCreate", interactionCreate(client));
 client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete());
 client.login(process.env["token"]);
+app.listen(3000 );
