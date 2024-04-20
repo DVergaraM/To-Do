@@ -1,5 +1,5 @@
 const { Express } = require("express");
-
+const http = require("http");
 /**
  * Starts a keep-alive server on the specified port.
  * @param {Express} app - The Express app object.
@@ -9,7 +9,9 @@ function keepAlive(app, port) {
   app.get("/", (_req, res) => {
     res.send("Hello World", 5, 5);
   });
-  app.listen(port);
+  let server = http.createServer(app);
+  server.listen(port);
+  console.log(`Server is running on port ${port}`);
 }
 
 module.exports = {

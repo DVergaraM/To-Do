@@ -1,5 +1,6 @@
 const { Client } = require("discord.js");
 const app = require("express")();
+require("dotenv").config();
 const { keepAlive } = require("./modules/keepAlive");
 const {
   ready,
@@ -8,8 +9,9 @@ const {
   guildCreate,
   guildDelete,
 } = require("./modules/events");
-require("dotenv").config();
-const http = require("http");
+
+keepAlive(app, 3000);
+
 const client = new Client(clientOptions);
 
 client.once("ready", ready(client));
@@ -17,6 +19,3 @@ client.on("interactionCreate", interactionCreate(client));
 client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete());
 client.login(process.env["token"]);
-
-http.createServer(app).listen(3000);
-console.log("Server is running on port 3000");
