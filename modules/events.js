@@ -23,36 +23,14 @@ function interactionCreate(client) {
   };
 }
 
-function isAPION() {
-  request(
-    {
-      url: "https://to-do-api-9r0i.onrender.com/",
-    },
-    (err, res, body) => {
-      if (err) {
-        console.error("Error:", err);
-        return false;
-      }
-      return true;
-    }
-  );
-}
-
 /**
  * Function that returns a callback function to be executed when the bot is ready.
  * @param {Client} client - The Discord client object.
- * @param {Express} app - The Express app object.
- * @param {number} port - The port number to listen on.
  * @returns {Function} - The callback function to be executed when the bot is ready.
  */
-function ready(client, app, port) {
+function ready(client) {
   return async () => {
-    if (!isAPION()) {
-      console.log("API is not online.");
-      exit(1);
-    }
     console.log("Bot is ready.");
-    keepAlive(app, port);
     let embed = new EmbedBuilder();
     embed.setColor("DarkAqua");
     embed.setTitle("Bot is ready.");

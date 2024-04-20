@@ -1,6 +1,7 @@
 const { Client } = require("discord.js");
 const app = require("express")();
 require("dotenv").config();
+const { keepAlive } = require("./modules/keepAlive");
 const {
   ready,
   interactionCreate,
@@ -11,7 +12,8 @@ const {
 
 const client = new Client(clientOptions);
 
-client.once("ready", ready(client, app, 3000));
+keepAlive(app, 3001);
+client.once("ready", ready(client));
 client.on("interactionCreate", interactionCreate(client));
 client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete());

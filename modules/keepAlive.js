@@ -9,8 +9,7 @@ function keepAlive(app, port) {
   app.get("/", (_req, res) => {
     res.send("Hello World", 5, 5);
   });
-  let server = http.createServer(app);
-  server.listen(port);
+  app.listen(port);
   console.log(`Server is running on port ${port}`);
 }
 
