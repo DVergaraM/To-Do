@@ -7,6 +7,7 @@ const {
 const { reminder, commandHandling } = require("./clientMethods");
 const { isReminderTime, changeStatus } = require("./methods");
 const { createConfig, deleteConfig } = require("./requests/config");
+const { keepAlive } = require("./keepAlive");
 
 /**
  * Handles the interaction create event.
@@ -23,9 +24,11 @@ function interactionCreate(client) {
 /**
  * Function that returns a callback function to be executed when the bot is ready.
  * @param {Client} client - The Discord client object.
+ * @param {Express} app - The Express app object.
+ * @param {number} port - The port number to listen on.
  * @returns {Function} - The callback function to be executed when the bot is ready.
  */
-function ready(client) {
+function ready(client, app, port) {
   return async () => {
     console.log("Bot is ready.");
     let embed = new EmbedBuilder();
@@ -39,6 +42,7 @@ function ready(client) {
       await changeStatus(client);
       await reminder(client, today, condition);
     }, 60000);
+    keepAlive(app, port);
   };
 }
 
