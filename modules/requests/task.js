@@ -1,4 +1,5 @@
 const request = require("request");
+;
 
 /**
  * Retrieves tasks from the server for a specific guild.
@@ -6,7 +7,7 @@ const request = require("request");
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
  */
 async function getTasksByUser(userID) {
-  let url = `http://localhost:3000/tasks/user`;
+  let url = `https://to-do-api-9r0i.onrender.com/tasks/user`;
   if (userID == "") {
     console.log("Invalid user ID");
     return [];
@@ -51,7 +52,7 @@ async function getTasksByUser(userID) {
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of task objects.
  */
 async function getTasksByGuild(guildID) {
-  let url = `http://localhost:3000/tasks/guild?id=${guildID}`;
+  let url = `https://to-do-api-9r0i.onrender.com/tasks/guild?id=${guildID}`;
   return new Promise((resolve, reject) => {
     request(
       {
@@ -93,7 +94,7 @@ async function getTasksCount() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/tasks/count/`,
+        url: `https://to-do-api-9r0i.onrender.com/tasks/count/`,
         json: true,
       },
       (err, _res, body) => {
@@ -126,7 +127,7 @@ async function getTasksCount() {
 function addTask(userID, guildID, task, date) {
   request(
     {
-      url: `http://localhost:3000/tasks/`,
+      url: `https://to-do-api-9r0i.onrender.com/tasks/`,
       method: "POST",
       json: true,
       body: {
@@ -159,7 +160,7 @@ function addTask(userID, guildID, task, date) {
 async function deleteTaskByUser(userID, task) {
   request(
     {
-      url: `http://localhost:3000/tasks/`,
+      url: `https://to-do-api-9r0i.onrender.com/tasks/`,
       method: "DELETE",
       json: true,
       body: {
@@ -197,7 +198,7 @@ async function deleteTask(taskID) {
     }
     request(
       {
-        url: `http://localhost:3000/tasks/`,
+        url: `https://to-do-api-9r0i.onrender.com/tasks/`,
         method: "DELETE",
         json: true,
         body: {
@@ -224,7 +225,7 @@ async function deleteTask(taskID) {
 async function updateTask(userID, taskID, done) {
   request(
     {
-      url: `http://localhost:3000/tasks/${taskID}`,
+      url: `https://to-do-api-9r0i.onrender.com/tasks/${taskID}`,
       method: "PATCH",
       json: true,
       body: {

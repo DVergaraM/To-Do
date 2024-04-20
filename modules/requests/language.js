@@ -1,4 +1,5 @@
 const request = require("request");
+;
 
 /**
  * Retrieves the language for a given guild ID.
@@ -7,7 +8,7 @@ const request = require("request");
  */
 async function getLanguageById(guildID) {
   return new Promise((resolve, reject) => {
-    let url = `http://localhost:3000/language`;
+    let url = `https://to-do-api-9r0i.onrender.com/language`;
     if (guildID != "") {
       url += `?guildID=${guildID}`;
     }
@@ -48,7 +49,7 @@ async function getLanguage() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/language/`,
+        url: `https://to-do-api-9r0i.onrender.com/language/`,
         json: true,
       },
       async (err, _res, body) => {

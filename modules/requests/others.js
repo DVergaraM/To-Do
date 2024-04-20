@@ -1,4 +1,5 @@
 const request = require("request");
+;
 
 /**
  * Deletes a global command from the Discord application.
@@ -32,7 +33,7 @@ async function getUsers() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/users/`,
+        url: `https://to-do-api-9r0i.onrender.com/users/`,
         json: true,
       },
       (err, _res, body) => {
@@ -57,7 +58,7 @@ async function getUser(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/config?guildID=${guildID}`,
+        url: `https://to-do-api-9r0i.onrender.com/config?guildID=${guildID}`,
         json: true,
       },
       async (err, _res, body) => {
@@ -92,7 +93,7 @@ async function getChannel(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/config?guildID=${guildID}`,
+        url: `https://to-do-api-9r0i.onrender.com/config?guildID=${guildID}`,
         json: true,
       },
       async (err, _res, body) => {
@@ -125,7 +126,7 @@ async function getGuilds() {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/config/guilds`,
+        url: `https://to-do-api-9r0i.onrender.com/config/guilds`,
         json: true,
       },
       (err, _res, body) => {

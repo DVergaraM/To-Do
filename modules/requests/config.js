@@ -1,4 +1,5 @@
 const request = require("request");
+;
 
 /**
  * Retrieves the configuration for a guild.
@@ -9,7 +10,7 @@ async function getConfig(guildID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/config?guildID=${guildID}`,
+        url: `https://to-do-api-9r0i.onrender.com/config?guildID=${guildID}`,
         json: true,
       },
       (err, _res, body) => {
@@ -40,7 +41,7 @@ async function getConfig(guildID) {
  * @returns {Map<string, any>} - The updated configuration object.
  */
 async function updateConfig(guildID, channelID, userID, language) {
-  let url = `http://localhost:3000/config?guildID=${guildID}`;
+  let url = `https://to-do-api-9r0i.onrender.com/config?guildID=${guildID}`;
 
   if (channelID !== "") {
     url += `&channelID=${channelID}`;
@@ -82,7 +83,7 @@ async function updateConfig(guildID, channelID, userID, language) {
 function deleteConfig(guildID) {
   request(
     {
-      url: `http://localhost:3000/config?guildID=${guildID}`,
+      url: `https://to-do-api-9r0i.onrender.com/config?guildID=${guildID}`,
       method: "DELETE",
       json: true,
     },
@@ -111,7 +112,7 @@ function deleteConfig(guildID) {
 function createConfig(guildID) {
   request(
     {
-      url: `http://localhost:3000/config/`,
+      url: `https://to-do-api-9r0i.onrender.com/config/`,
       method: "POST",
       json: true,
       body: {

@@ -1,4 +1,5 @@
 const request = require("request");
+;
 
 /**
  * Retrieves reminders for a given user ID.
@@ -7,7 +8,7 @@ const request = require("request");
  */
 async function getReminders(userID) {
   return new Promise((resolve, reject) => {
-    let url = `http://localhost:3000/reminders`;
+    let url = `https://to-do-api-9r0i.onrender.com/reminders`;
     if (userID != "") {
       url += `?userID=${userID}`;
     }
@@ -40,7 +41,7 @@ async function addReminder(userID, hour, minute) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/reminders/`,
+        url: `https://to-do-api-9r0i.onrender.com/reminders/`,
         method: "POST",
         json: true,
         body: {
@@ -71,7 +72,7 @@ async function deleteReminder(userID, reminderID) {
   return new Promise((resolve, reject) => {
     request(
       {
-        url: `http://localhost:3000/reminders/`,
+        url: `https://to-do-api-9r0i.onrender.com/reminders/`,
         method: "DELETE",
         json: true,
         body: {
