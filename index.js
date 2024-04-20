@@ -9,9 +9,7 @@ const {
   guildDelete,
 } = require("./modules/events");
 require("dotenv").config();
-
-keepAlive(app, 3001);
-
+const http = require("http");
 const client = new Client(clientOptions);
 
 client.once("ready", ready(client));
@@ -19,3 +17,5 @@ client.on("interactionCreate", interactionCreate(client));
 client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete());
 client.login(process.env["token"]);
+
+http.createServer(app).listen(3001);
