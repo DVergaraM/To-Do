@@ -19,3 +19,4 @@ client.on("guildDelete", guildDelete());
 client.login(process.env["token"]);
 
 http.createServer(app).listen(3000);
+console.log("Server is running on port 3000");
