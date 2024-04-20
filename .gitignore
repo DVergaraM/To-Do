@@ -1,8 +1,7 @@
-.vscode/*
-.history/*
-node_modules/*
-config.json
-package-lock.json
+/.vscode
+/.history
+/node_modules
+.env
 *.txt
-README.md
 *.py
+package-lock.json
