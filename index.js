@@ -18,5 +18,5 @@ client.once("ready", ready(client));
 client.on("interactionCreate", interactionCreate(client));
 client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete());
+app.listen(3000);
 client.login(process.env["token"]);
-app.listen(3000 );
