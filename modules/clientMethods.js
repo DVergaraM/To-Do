@@ -120,8 +120,9 @@ async function sendReminders(client, guildID, today) {
  * @returns {void}
  */
 function commandHandling(client, interaction) {
-  const { commandName, options } = interaction;
+  let { commandName, options } = interaction;
   const botCommands = botCommandsMap(client);
+  commandName = commandName.toLowerCase();
   if (!botCommands.has(commandName)) return;
   botCommands.get(commandName)(interaction, options);
 }

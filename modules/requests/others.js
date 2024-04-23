@@ -1,6 +1,5 @@
 const request = require("request");
-;
-
+const { ApplicationCommandOptionType, Client } = require("discord.js");
 /**
  * Deletes a global command from the Discord application.
  *
@@ -26,8 +25,8 @@ async function deleteGlobalCommand(client, commandName) {
 }
 
 /**
- * 
- * @param {Client} client 
+ *
+ * @param {Client} client
  */
 async function deleteCommands(client) {
   const commands = await client.application.commands.fetch();
@@ -35,6 +34,179 @@ async function deleteCommands(client) {
     await client.application.commands.delete(command.id);
   });
   console.log("Commands deleted");
+}
+
+/**
+ *
+ * @param {Client} client
+ */
+async function createCommands(client) {
+  // add
+  client.application.commands.create({
+    name: "add",
+    description: "Add a new task",
+    options: [
+      {
+        name: "date",
+        description: "The due date for the task",
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+      {
+        name: "task",
+        description: "The task to be added",
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+    ],
+  });
+  // delete
+  client.application.commands.create({
+    name: "delete",
+    description: "Delete a task",
+    options: [
+      {
+        name: "id",
+        description: "The ID of the task to delete",
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+    ],
+  });
+  // list
+  client.application.commands.create({
+    name: "list",
+    description: "List all tasks",
+    options: [
+      {
+        name: "status",
+        description: "Filter by status",
+        type: ApplicationCommandOptionType.String,
+        required: false,
+        choices: [
+          { name: "Done", value: "done" },
+          { name: "Pending", value: "pending" },
+        ],
+      },
+    ],
+  });
+  // ping
+  client.application.commands.create({
+    name: "ping",
+    description: "Replies with Pong!",
+  });
+  // help
+  client.application.commands.create({
+    name: "help",
+    description: "List all commands",
+  });
+  // set done
+  client.application.commands.create({
+    name: "setdone",
+    description: "Mark a task as done",
+    options: [
+      {
+        name: "id",
+        description: "The ID of the task to mark as done",
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+    ],
+  });
+  // set undone
+  client.application.commands.create({
+    name: "setundone",
+    description: "Mark a task as undone",
+    options: [
+      {
+        name: "id",
+        description: "The ID of the task to mark as undone",
+        type: ApplicationCommandOptionType.String,
+        required: true,
+      },
+    ],
+  });
+  // config
+  client.application.commands.create({
+    name: "config",
+    description: "Configure the bot",
+    options: [
+      {
+        name: "get",
+        description: "Get the current configuration",
+        type: ApplicationCommandOptionType.Subcommand,
+      },
+      {
+        name: "set",
+        description: "Set the configuration",
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: "channel",
+            description: "The channel to send reminders to",
+            type: ApplicationCommandOptionType.Channel,
+            required: false,
+          },
+          {
+            name: "user",
+            description: "The user to send reminders to",
+            type: ApplicationCommandOptionType.User,
+            required: false,
+          },
+          {
+            name: "language",
+            description: "The language to send reminders in",
+            type: ApplicationCommandOptionType.String,
+            required: false,
+          },
+        ],
+      },
+      {
+        name: "reset",
+        description: "Reset the configuration",
+        type: ApplicationCommandOptionType.Subcommand,
+      },
+    ],
+  });
+  // reminder
+  client.application.commands.create({
+    name: "reminder",
+    description: "Set a reminder",
+    options: [
+      {
+        name: "list",
+        description: "List all reminders",
+        type: ApplicationCommandOptionType.Subcommand,
+      },
+      {
+        name: "add",
+        description: "Add a new reminder",
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: "time",
+            description: "The time for the reminder",
+            type: ApplicationCommandOptionType.String,
+            required: true,
+          },
+        ],
+      },
+      {
+        name: "delete",
+        description: "Delete a reminder",
+        type: ApplicationCommandOptionType.Subcommand,
+        options: [
+          {
+            name: "id",
+            description: "The ID of the reminder to delete",
+            type: ApplicationCommandOptionType.String,
+            required: true,
+          },
+        ],
+      },
+    ],
+  });
+  console.log("Commands created");
 }
 
 /**
@@ -156,6 +328,7 @@ async function getGuilds() {
 module.exports = {
   deleteGlobalCommand,
   deleteCommands,
+  createCommands,
   getUsers,
   getUser,
   getChannel,

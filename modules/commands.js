@@ -37,8 +37,8 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves once the task is added.
    */
   async addTask(interaction, options) {
-    let due_date = options.getString("fecha");
-    let task = options.getString("tarea");
+    let due_date = options.getString("date");
+    let task = options.getString("task");
     let lang = await getLanguage(interaction.guild.id);
     const { language } = lang || {};
     await addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
@@ -275,7 +275,7 @@ class Commands {
    */
   reminder = async (interaction, options) => {
     let command = options.getSubcommand();
-    let lang = await getLanguage(interaction.guild.id);
+    let lang = await getLanguageById(interaction.guild.id);
 
     let embed = new EmbedBuilder();
     embed.setTitle("Reminder");

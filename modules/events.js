@@ -1,15 +1,12 @@
 const {
   Client,
   GatewayIntentBits,
-  Guild,
   EmbedBuilder,
 } = require("discord.js");
 const { reminder, commandHandling } = require("./clientMethods");
 const { isReminderTime, changeStatus } = require("./methods");
 const { createConfig, deleteConfig } = require("./requests/config");
-const { keepAlive } = require("./keepAlive");
-const { request } = require("http");
-const { exit } = require("process");
+const { createCommands } = require("./requests/others");
 
 /**
  * Handles the interaction create event.
@@ -30,6 +27,7 @@ function interactionCreate(client) {
  */
 function ready(client) {
   return async () => {
+    createCommands(client);
     console.log("Bot is ready.");
     let embed = new EmbedBuilder();
     embed.setColor("DarkAqua");
