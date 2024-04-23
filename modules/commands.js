@@ -29,6 +29,10 @@ class Commands {
     this.client = client;
   }
 
+  string() {
+    return `Commands class instance for ${this.client.user.tag}`;
+  }
+
   /**
    * Adds a task to the to-do list.
    *
@@ -47,7 +51,8 @@ class Commands {
       [task, due_date],
       language["add"]
     );
-    interaction.reply(message, {});
+    await interaction.reply(message, {});
+    return;
   }
 
   /**
@@ -72,6 +77,7 @@ class Commands {
         .get("1230190057684734124")
         .send({ embeds: [embed] });
       console.error("Invalid language data:", lang?.language);
+      await interaction.reply({ content: "Invalid language data." });
       return;
     }
     let tasks = await getTasksByUser(interaction.user.id);
@@ -80,14 +86,15 @@ class Commands {
     }
 
     if (tasks.length === 0) {
-      embed.setColor("RED");
+      embed.setColor("Red");
       embed.setDescription(
         `No tasks found for user ${interaction.user.globalName}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
       );
-      this.client.channels.cache
+      interaction.client.channels.cache
         .get("1230190057684734124")
         .send({ embeds: [embed] });
-      return interaction.reply(lang.language.no_tasks);
+      await interaction.reply({ content: lang.language.no_tasks });
+      return;
     }
 
     const taskList = tasks
@@ -109,7 +116,8 @@ class Commands {
     );
     const message = status ? mess : lang.language.list.replace("{0}", taskList);
 
-    interaction.reply({ content: message });
+    await interaction.reply({ content: message });
+    return;
   }
 
   /**
@@ -120,7 +128,8 @@ class Commands {
    */
 
   ping = async (interaction, _) => {
-    interaction.reply(this.client.ws.ping + "ms", { ephemeral: true });
+    await interaction.reply(this.client.ws.ping + "ms", { ephemeral: true });
+    return;
   };
 
   /**
@@ -131,14 +140,15 @@ class Commands {
    */
   help = async (interaction, _) => {
     let lang = await getLanguage(interaction.guild.id);
-    this.client.application.commands.fetch().then((commands) => {
+    this.client.application.commands.fetch().then(async (commands) => {
       const commandList = commands
         .map((c) => {
           return `/${c.name} - ${c.description}`;
         })
         .join("\n");
       let message = lang.language.help.replace("{0}", commandList);
-      interaction.reply(message, {});
+      await interaction.reply(message, {});
+      return;
     });
   };
 
@@ -154,7 +164,8 @@ class Commands {
     let lang = await getLanguage(interaction.guild.id);
     await deleteTaskAPI(interaction.user.id, taskDelete);
     let message = lang.language.deleteTask.replace("{0}", taskDelete);
-    interaction.reply(message, {});
+    await interaction.reply(message, {});
+    return;
   }
 
   /**
@@ -168,7 +179,8 @@ class Commands {
     await updateTask(interaction.user.id, taskId, "true");
     let lang = await getLanguage(interaction.guild.id);
     let message = lang.language.setDone.replace("{0}", taskId);
-    interaction.reply(message, {});
+    await interaction.reply(message, {});
+    return;
   }
 
   /**
@@ -183,7 +195,8 @@ class Commands {
     let lang = await getLanguage(interaction.guild.id);
     await updateTask(taskId, "false");
     let message = lang.language.setUndone.replace("{0}", taskId);
-    interaction.reply(message, {});
+    await interaction.reply(message, {});
+    return;
   }
 
   /**
@@ -202,7 +215,7 @@ class Commands {
       embed.setTitle("Config");
       embed.setColor("RED");
       embed.setDescription(lang.language.ownerError);
-      interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed] });
       return;
     }
     switch (command) {
@@ -217,13 +230,13 @@ class Commands {
             [config.channelID, user.user.tag, config.language],
             lang.language.getConfig
           );
-          interaction.reply(response, {});
+          await interaction.reply(response, {});
+          return;
         } catch (e) {
           console.error(e);
-          interaction.reply(lang.language.configError, {});
+          await interaction.reply(lang.language.configError, {});
+          return;
         }
-        break;
-
       case "set":
         let channel = options.getChannel("channel")
           ? options.getChannel("channel").id
@@ -235,7 +248,8 @@ class Commands {
 
         if (channel || user || language) {
           await updateConfig(interaction.guild.id, channel, user, language);
-          interaction.reply(lang.language.saved, {});
+          await interaction.reply(lang.language.saved, {});
+          return;
         } else {
           let embed = new EmbedBuilder();
           embed.setTitle("Config");
@@ -244,15 +258,13 @@ class Commands {
           this.client.channels.cache
             .get("1230190057684734124")
             .send({ embeds: [embed] });
-          interaction.reply(lang.language.saveError, {});
+          await interaction.reply(lang.language.saveError, {});
+          return;
         }
-
-        break;
-
       case "reset":
         await updateConfig(interaction.guild.id, "", "", "en");
-        interaction.reply(lang.language.configReset, {});
-        break;
+        await interaction.reply(lang.language.configReset, {});
+        return;
     }
   }
 
@@ -296,25 +308,25 @@ class Commands {
           this.client.channels.cache
             .get("1230190057684734124")
             .send({ embeds: [embed] });
-          interaction.reply(lang.language.noReminders, {});
+          await interaction.reply(lang.language.noReminders, {});
           return;
         }
         let messageList = lang.language.reminderList.replace(
           "{0}",
           reminderList
         );
-        interaction.reply(messageList, {});
-        break;
+        await interaction.reply(messageList, {});
+        return;
       case "add":
         let time = options.getString("time");
         let [hour, minute] = time.split(":");
         let rValue = await addReminder(interaction.user.id, hour, minute);
         if (rValue["error"]) {
-          interaction.reply(lang.language.reminderError, {});
+          await interaction.reply(lang.language.reminderError, {});
           return;
         }
-        interaction.reply(lang.language.addReminder, {});
-        break;
+        await interaction.reply(lang.language.addReminder, {});
+        return;
       case "delete":
         let reminderID = options.getString("id");
         let reValue = await deleteReminder(interaction.user.id, reminderID);
@@ -324,13 +336,15 @@ class Commands {
           this.client.channels.cache
             .get("1230190057684734124")
             .send({ embeds: [embed] });
-          interaction.reply(reValue["error"], {});
+          await interaction.reply(reValue["error"], {});
+          return;
         } else {
-          interaction.reply(lang.language.removeReminder, {});
+          await interaction.reply(lang.language.removeReminder, {});
+          return;
         }
-        break;
       default:
-        interaction.reply(lang.language.reminderCommands, {});
+        await interaction.reply(lang.language.reminderCommands, {});
+        return;
     }
   };
 }

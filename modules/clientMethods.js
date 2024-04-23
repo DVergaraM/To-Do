@@ -12,6 +12,7 @@ const { getGuilds, getChannel, getUser } = require("./requests/others");
  */
 function botCommandsMap(client) {
   const commands = new Commands(client);
+  console.log(commands.string())
   return new Map([
     ["add", commands.addTask],
     ["list", commands.listTasks],
