@@ -26,6 +26,18 @@ async function deleteGlobalCommand(client, commandName) {
 }
 
 /**
+ * 
+ * @param {Client} client 
+ */
+async function deleteCommands(client) {
+  const commands = await client.application.commands.fetch();
+  commands.forEach(async (command) => {
+    await client.application.commands.delete(command.id);
+  });
+  console.log("Commands deleted");
+}
+
+/**
  * Retrieves a list of users from the server.
  * @returns {Promise<Array>} A promise that resolves to an array of user objects.
  */
@@ -143,6 +155,7 @@ async function getGuilds() {
 
 module.exports = {
   deleteGlobalCommand,
+  deleteCommands,
   getUsers,
   getUser,
   getChannel,
