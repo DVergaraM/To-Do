@@ -216,11 +216,13 @@ async function deleteTask(taskID) {
   });
 }
 
+
 /**
- * Updates the status of a task.
- * @param {string} taskID - The ID of the task to update.
- * @param {boolean} done - The new status of the task.
- * @returns {Promise<any>} - A promise that resolves with the updated task.
+ * Updates a task with the given task ID and sets its status to the specified value.
+ * @param {string} userID - The ID of the user who owns the task.
+ * @param {string} taskID - The ID of the task to be updated.
+ * @param {boolean} done - The status to set for the task (true for done, false for not done).
+ * @returns {Promise<any>} - A promise that resolves with the updated task object.
  */
 async function updateTask(userID, taskID, done) {
   request(

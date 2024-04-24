@@ -4,7 +4,7 @@ const {
   EmbedBuilder,
 } = require("discord.js");
 
-const { getLanguage, getLanguageById } = require("./requests/language");
+const { getLanguageById } = require("./requests/language");
 const {
   addTask: addTaskAPI,
   deleteTaskByUser: deleteTaskAPI,
@@ -29,8 +29,20 @@ class Commands {
     this.client = client;
   }
 
+  /**
+   * Returns a string representing the Commands class instance.
+   * @returns {string} A string representing the Commands class instance.
+   */
   string() {
     return `Commands class instance for ${this.client.user.tag}`;
+  }
+
+  /**
+   * Returns a string representation of the Commands object.
+   * @returns {string} The string representation of the Commands object.
+   */
+  repr() {
+    return `Commands(${this.client.user.tag})`;
   }
 
   /**
@@ -43,7 +55,7 @@ class Commands {
   async addTask(interaction, options) {
     let due_date = options.getString("date");
     let task = options.getString("task");
-    let lang = await getLanguage(interaction.guild.id);
+    let lang = await getLanguageById(interaction.guild.id);
     const { language } = lang || {};
     await addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
     let message = multipleReplaceForLanguage(
@@ -64,12 +76,12 @@ class Commands {
    */
   async listTasks(interaction, options) {
     const status = options.getString("status");
-    const lang = await getLanguage(interaction.guild.id);
+    const lang = await getLanguageById(interaction.guild.id);
     let embed = new EmbedBuilder();
     embed.setTitle("Commands");
 
     if (!lang?.language?.list_status) {
-      embed.setColor("RED");
+      embed.setColor("Red");
       embed.setDescription(
         `Invalid language data: ${lang?.language}\nIn guild: ${interaction.guild.name}(ID: ${interaction.guild.id})`
       );
@@ -139,7 +151,7 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves when the help message is sent.
    */
   help = async (interaction, _) => {
-    let lang = await getLanguage(interaction.guild.id);
+    let lang = await getLanguageById(interaction.guild.id);
     this.client.application.commands.fetch().then(async (commands) => {
       const commandList = commands
         .map((c) => {
@@ -161,7 +173,7 @@ class Commands {
    */
   async deleteTask(interaction, options) {
     let taskDelete = options.getString("id");
-    let lang = await getLanguage(interaction.guild.id);
+    let lang = await getLanguageById(interaction.guild.id);
     await deleteTaskAPI(interaction.user.id, taskDelete);
     let message = lang.language.deleteTask.replace("{0}", taskDelete);
     await interaction.reply(message, {});
@@ -176,8 +188,8 @@ class Commands {
    */
   async setDone(interaction, options) {
     let taskId = parseInt(options.getString("id"));
+    let lang = await getLanguageById(interaction.guild.id);
     await updateTask(interaction.user.id, taskId, "true");
-    let lang = await getLanguage(interaction.guild.id);
     let message = lang.language.setDone.replace("{0}", taskId);
     await interaction.reply(message, {});
     return;
@@ -192,8 +204,8 @@ class Commands {
    */
   async setUndone(interaction, options) {
     let taskId = parseInt(options.getString("id"));
-    let lang = await getLanguage(interaction.guild.id);
-    await updateTask(taskId, "false");
+    let lang = await getLanguageById(interaction.guild.id);
+    await updateTask(interaction.user.id, taskId, "false");
     let message = lang.language.setUndone.replace("{0}", taskId);
     await interaction.reply(message, {});
     return;
@@ -213,7 +225,7 @@ class Commands {
     if (interaction.user.id !== interaction.guild.ownerId) {
       let embed = new EmbedBuilder();
       embed.setTitle("Config");
-      embed.setColor("RED");
+      embed.setColor("Red");
       embed.setDescription(lang.language.ownerError);
       await interaction.reply({ embeds: [embed] });
       return;
@@ -253,7 +265,7 @@ class Commands {
         } else {
           let embed = new EmbedBuilder();
           embed.setTitle("Config");
-          embed.setColor("RED");
+          embed.setColor("Red");
           embed.setDescription(`Error: ${lang.language.saveError}`);
           this.client.channels.cache
             .get("1230190057684734124")
@@ -301,7 +313,7 @@ class Commands {
           })
           .join("\n");
         if (reminders.length === 0) {
-          embed.setColor("RED");
+          embed.setColor("Red");
           embed.setDescription(
             `No reminders found for user ${interaction.user.globalName}(ID: ${interaction.user.id}) in guild ${interaction.guild.name}(ID: ${interaction.guild.id})`
           );
@@ -331,7 +343,7 @@ class Commands {
         let reminderID = options.getString("id");
         let reValue = await deleteReminder(interaction.user.id, reminderID);
         if (reValue["error"]) {
-          embed.setColor("RED");
+          embed.setColor("Red");
           embed.setDescription(`Error: ${reValue["error"]}`);
           this.client.channels.cache
             .get("1230190057684734124")
