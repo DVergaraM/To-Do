@@ -65,7 +65,7 @@ async function sendReminders(client, guildID, today) {
   let user = await getUser(guildID);
   let tasks = await getTasksByGuild(guildID);
   let tasksToSend = tasks.filter((t) => t.status === false);
-  let tasksToDelete = tasksToSend.filter(
+  let tasksToDelete = tasks.filter(
     (t) => t.date < today && t.status === true
   );
   let guild = client.guilds.cache.get(guildID);
