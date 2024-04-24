@@ -155,7 +155,13 @@ class Commands {
     await this.client.application.commands.fetch().then(async (commands) => {
       const commandList = commands
         .map((c) => {
-          return `/${c.name} - ${c.description}`;
+          if (c.options) {
+            return `/${c.name} - ${c.description}\n${c.options
+              .map((o) => `  ${o.name} - ${o.description}`)
+              .join("\n")}`;
+          } else {
+            return `/${c.name} - ${c.description}`;
+          }
         })
         .join("\n");
       let message = lang.language.help.replace("{0}", commandList);
@@ -253,9 +259,7 @@ class Commands {
         let channel = options.getChannel("channel")
           ? options.getChannel("channel").id
           : "";
-        let user = options.getUser("user")
-          ? options.getUser("user").id
-          : "";
+        let user = options.getUser("user") ? options.getUser("user").id : "";
         let language = options.getString("language")
           ? options.getString("language")
           : "";
