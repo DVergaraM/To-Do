@@ -4,8 +4,6 @@ const { getLanguage } = require("./requests/language");
 const { deleteTask, getTasksByGuild } = require("./requests/task");
 const { getGuilds, getChannel, getUser } = require("./requests/others");
 
-
-let cmds;
 /**
  * Creates a map of bot commands.
  *
@@ -15,8 +13,7 @@ let cmds;
 function botCommandsMap(client) {
   const commands = new Commands(client);
   console.log(commands.repr());
-  console.log(repr(commands));
-  cmds = new Map([
+  return new Map([
     ["add", commands.addTask],
     ["list", commands.listTasks],
     ["ping", commands.ping],
@@ -27,7 +24,6 @@ function botCommandsMap(client) {
     ["config", commands.config],
     ["reminder", commands.reminder],
   ]);
-  return cmds;
 }
 
 /**
@@ -65,9 +61,7 @@ async function sendReminders(client, guildID, today) {
   let user = await getUser(guildID);
   let tasks = await getTasksByGuild(guildID);
   let tasksToSend = tasks.filter((t) => t.status === false);
-  let tasksToDelete = tasks.filter(
-    (t) => t.date < today && t.status === true
-  );
+  let tasksToDelete = tasks.filter((t) => t.date < today && t.status === true);
   let guild = client.guilds.cache.get(guildID);
   let embed = new EmbedBuilder();
   embed.setTitle("Reminders");
