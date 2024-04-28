@@ -2,7 +2,7 @@
 
 ## Discord Bot Configuration
 
-This README file outlines how to set up your `config.example.json` for your Discord bot.
+This README file outlines how to set up your `example.env` for your Discord bot.
 
 ### Setup
 
