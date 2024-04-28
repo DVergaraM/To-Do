@@ -7,8 +7,11 @@ const {
   guildCreate,
   guildDelete,
 } = require("./modules/events");
+const { keepAlive } = require("./modules/keepAlive");
+const app = require("express")();
 
 const client = new Client(clientOptions);
+keepAlive(app, 3000);
 client.once("ready", ready(client));
 client.on("interactionCreate", interactionCreate(client));
 client.on("guildCreate", guildCreate());
