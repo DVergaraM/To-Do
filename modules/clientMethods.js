@@ -94,7 +94,7 @@ async function sendReminders(client, guildID, today) {
 
     let message = lang.language.reminder.replace("{0}", tasksToSend.length);
     await channel.send({
-      content: `<@!${user.userID}> **${message}**: ${tasksMessage}`,
+      content: `<@!${user.userID}> **${message}**:\n${tasksMessage}`,
     });
     embed.setColor("Green");
     embed.setDescription(

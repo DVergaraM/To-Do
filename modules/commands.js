@@ -61,7 +61,8 @@ class Commands {
     let message = multipleReplaceForLanguage(
       ["{0}", "{1}"],
       [task, due_date],
-      language["add"]
+      language["add"],
+      this.client
     );
     await interaction.reply(message, {});
     return;
@@ -124,7 +125,8 @@ class Commands {
     let mess = multipleReplaceForLanguage(
       ["{0}", "{1}", "{2}"],
       [tasks.length, rStatus, taskList],
-      lang.language.list_status
+      lang.language.list_status,
+      this.client
     );
     const message = status ? mess : lang.language.list.replace("{0}", taskList);
 
@@ -151,23 +153,19 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves when the help message is sent.
    */
   help = async (interaction, _) => {
-    let lang = await getLanguageById(interaction.guild.id);
-    await this.client.application.commands.fetch().then(async (commands) => {
-      const commandList = commands
-        .map((c) => {
-          if (c.options) {
-            return `/${c.name} - ${c.description}\n${c.options
-              .map((o) => `  ${o.name} - ${o.description}`)
-              .join("\n")}`;
-          } else {
-            return `/${c.name} - ${c.description}`;
-          }
-        })
-        .join("\n");
-      let message = lang.language.help.replace("{0}", commandList);
-      await interaction.reply(message, {});
-      return;
+    // const lang = await getLanguageById(interaction.guild.id);
+    let embed = new EmbedBuilder();
+    embed.setTitle("Commands");
+    embed.setColor("Green");
+
+    let commands = await this.client.application.commands.fetch();
+    commands.forEach((command) => {
+      embed.addFields({
+        name: command.name,
+        value: command.description,
+      });
     });
+    await interaction.reply({ embeds: [embed], ephemeral: false });
   };
 
   /**
@@ -246,7 +244,8 @@ class Commands {
           let response = multipleReplaceForLanguage(
             ["{0}", "{1}", "{2}"],
             [config.channelID, user.user.tag, config.language],
-            lang.language.getConfig
+            lang.language.getConfig,
+            this.client
           );
           await interaction.reply(response, {});
           return;

@@ -208,6 +208,7 @@ async function deleteTask(taskID) {
       (err, _res, body) => {
         if (err) {
           console.error("Error:", err);
+          reject(err);
           return;
         }
         resolve(body);
@@ -228,7 +229,7 @@ async function updateTask(userID, taskID, done) {
   request(
     {
       url: `https://to-do-api-pqi0.onrender.com/tasks/${taskID}`,
-      method: "PATCH",
+      method: "PUT",
       json: true,
       body: {
         status: done,

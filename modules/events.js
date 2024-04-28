@@ -31,7 +31,7 @@ function ready(client) {
     console.log("Bot is ready.");
     let embed = new EmbedBuilder();
     embed.setColor("DarkAqua");
-    embed.setTitle("Bot is ready.");
+    embed.setTitle("To-Do Bot is ready.");
     embed.setTimestamp();
     client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
     setInterval(async () => {

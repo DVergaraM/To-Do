@@ -1,4 +1,4 @@
-const { Client, ActivityType, EmbedBuilder } = require("discord.js");
+const { Client, ActivityType, EmbedBuilder, Channel } = require("discord.js");
 const { getReminders } = require("./requests/reminder");
 const { getTasksCount } = require("./requests/task");
 const { getLanguage } = require("./requests/language");
@@ -25,6 +25,7 @@ function addZerosToMinutes(minutes) {
   if (minutes < 10) return `0${minutes}`;
   return `${minutes}`;
 }
+
 /**
  * Get the date, local hour, and UTC minutes.
  * @param {Date} date - The date object.
@@ -143,10 +144,11 @@ async function changeStatus(client) {
  * @param {string[]} toReplace - An array of strings to be replaced.
  * @param {string[]} replaceWith - An array of strings to replace the corresponding strings in `toReplace`.
  * @param {string} text - The text in which the replacements will be made.
+ * @param {Client} client - The Discord client instance.
  * @returns {string} The modified text with the replacements.
  * @throws {Error} If the length of `toReplace` and `replaceWith` arrays are not the same.
  */
-function multipleReplaceForLanguage(toReplace, replaceWith, text) {
+function multipleReplaceForLanguage(toReplace, replaceWith, text, client) {
   let embed = new EmbedBuilder();
   embed.setTitle("Error");
   if (toReplace.length !== replaceWith.length) {
@@ -156,7 +158,8 @@ function multipleReplaceForLanguage(toReplace, replaceWith, text) {
         ", "
       )} | ${replaceWith.join(", ")}`
     );
-    client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
+    let c = client.channels.cache.get("1230190057684734124");
+    if (c instanceof Channel) c.send({ embed: embed });
     throw new Error("The length of the arrays must be the same.");
   }
   for (let i = 0; i < toReplace.length; i++) {

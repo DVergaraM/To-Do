@@ -36,6 +36,26 @@ async function deleteCommands(client) {
   console.log("Commands deleted");
 }
 
+async function deleteOtherCommands(client) {
+  const commands = await client.application.commands.fetch();
+  commands.forEach(async (command) => {
+    if (
+      command.name !== "add" &&
+      command.name !== "delete" &&
+      command.name !== "list" &&
+      command.name !== "ping" &&
+      command.name !== "help" &&
+      command.name !== "setdone" &&
+      command.name !== "setundone" &&
+      command.name !== "config" &&
+      command.name !== "reminder"
+    ) {
+      await client.application.commands.delete(command.id);
+    }
+  });
+  console.log("Other commands deleted");
+}
+
 /**
  *
  * @param {Client} client
@@ -329,6 +349,7 @@ module.exports = {
   deleteGlobalCommand,
   deleteCommands,
   createCommands,
+  deleteOtherCommands,
   getUsers,
   getUser,
   getChannel,

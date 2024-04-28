@@ -58,7 +58,7 @@ async function updateConfig(guildID, channelID, userID, language) {
   request(
     {
       url: url,
-      method: "PATCH",
+      method: "PUT",
       json: true,
     },
     (err, _res, body) => {

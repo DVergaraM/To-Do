@@ -88,8 +88,10 @@ async function deleteReminder(userID, reminderID) {
         }
         if (body.error) {
           resolve(body);
+          return;
         }
         resolve(body);
+        return;
       }
     );
   });
