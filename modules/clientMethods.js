@@ -14,15 +14,15 @@ function botCommandsMap(client) {
   const commands = new Commands(client);
   console.log(commands.repr());
   return new Map([
-    ["add", commands.addTask],
-    ["list", commands.listTasks],
-    ["ping", commands.ping],
-    ["delete", commands.deleteTask],
-    ["help", commands.help],
-    ["setdone", commands.setDone],
-    ["setundone", commands.setUndone],
-    ["config", commands.config],
-    ["reminder", commands.reminder],
+    ["add", commands.addTask.bind(commands)],
+    ["list", commands.listTasks.bind(commands)],
+    ["ping", commands.ping.bind(commands)],
+    ["delete", commands.deleteTask.bind(commands)],
+    ["help", commands.help.bind(commands)],
+    ["setdone", commands.setDone.bind(commands)],
+    ["setundone", commands.setUndone.bind(commands)],
+    ["config", commands.config.bind(commands)],
+    ["reminder", commands.reminder.bind(commands)],
   ]);
 }
 
