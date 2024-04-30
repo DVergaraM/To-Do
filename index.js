@@ -16,4 +16,4 @@ client.on("interactionCreate", interactionCreate(client));
 client.on("guildCreate", guildCreate());
 client.on("guildDelete", guildDelete());
 client.login(process.env["token"]);
-keepAlive(app, 3000);
+//keepAlive(app, 3000);
