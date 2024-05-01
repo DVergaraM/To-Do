@@ -14,9 +14,15 @@ const { createCommands } = require("./requests/others");
  * @returns {Function} The interaction create event handler.
  */
 function interactionCreate(client) {
+  /**
+   * The interaction create event handler.
+   * @param {import('discord.js').Interaction} interaction - The interaction object.
+   */
   return async (interaction) => {
+    console.log("Interaction received.")
+    console.log(interaction.isCommand())
     if (!interaction.isCommand()) return;
-    commandHandling(client, interaction);
+    await commandHandling(client, interaction);
   };
 }
 
