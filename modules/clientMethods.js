@@ -13,15 +13,15 @@ const commandMap = new Command();
  */
 function botCommandsMap(client) {
   commands.client = client;
-  commandMap.set("add", commands.addTask);
-  commandMap.set("list", commands.listTasks);
-  commandMap.set("ping", commands.ping);
-  commandMap.set("delete", commands.deleteTask);
-  commandMap.set("help", commands.help);
-  commandMap.set("setdone", commands.setDone);
-  commandMap.set("setundone", commands.setUndone);
-  commandMap.set("config", commands.config);
-  commandMap.set("reminder", commands.reminder);
+  commandMap.set("add", commands.addTask.bind(commands));
+  commandMap.set("list", commands.listTasks.bind(commands));
+  commandMap.set("ping", commands.ping.bind(commands));
+  commandMap.set("delete", commands.deleteTask.bind(commands));
+  commandMap.set("help", commands.help.bind(commands));
+  commandMap.set("setdone", commands.setDone.bind(commands));
+  commandMap.set("setundone", commands.setUndone.bind(commands));
+  commandMap.set("config", commands.config.bind(commands));
+  commandMap.set("reminder", commands.reminder.bind(commands));
   return commandMap;
 }
 
