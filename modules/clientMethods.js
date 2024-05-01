@@ -4,8 +4,8 @@ const { getLanguage } = require("./requests/language");
 const { deleteTask, getTasksByGuild } = require("./requests/task");
 const { getGuilds, getChannel, getUser } = require("./requests/others");
 
-const commands = new Commands();
-const commandMap = new Command(null);
+const commands = new Commands(null);
+const commandMap = new Command();
 /**
  * Creates a map of bot commands.
  * @param {Client} client - The Discord client object.
