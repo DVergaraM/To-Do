@@ -42,7 +42,7 @@ function ready(client) {
     client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
     setInterval(async () => {
       let date = new Date();
-      let [today, condition] = isReminderTime(date);
+      let [today, condition] = await isReminderTime(date);
       await changeStatus(client);
       await reminder(client, today, condition);
     }, 60000);
