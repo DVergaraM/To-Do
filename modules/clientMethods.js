@@ -4,23 +4,24 @@ const { getLanguage } = require("./requests/language");
 const { deleteTask, getTasksByGuild } = require("./requests/task");
 const { getGuilds, getChannel, getUser } = require("./requests/others");
 
-const commandMap = new Command();
+const commands = new Commands();
+const commandMap = new Command(null);
 /**
  * Creates a map of bot commands.
  * @param {Client} client - The Discord client object.
  * @returns {Command} - An object containing mapped bot commands.
  */
 function botCommandsMap(client) {
-  const commands = new Commands(client);
-  commandMap.set("add", commands.addTask.bind(commands));
-  commandMap.set("list", commands.listTasks.bind(commands));
-  commandMap.set("ping", commands.ping.bind(commands));
-  commandMap.set("delete", commands.deleteTask.bind(commands));
-  commandMap.set("help", commands.help.bind(commands));
-  commandMap.set("setdone", commands.setDone.bind(commands));
-  commandMap.set("setundone", commands.setUndone.bind(commands));
-  commandMap.set("config", commands.config.bind(commands));
-  commandMap.set("reminder", commands.reminder.bind(commands));
+  commands.client = client;
+  commandMap.set("add", commands.addTask);
+  commandMap.set("list", commands.listTasks);
+  commandMap.set("ping", commands.ping);
+  commandMap.set("delete", commands.deleteTask);
+  commandMap.set("help", commands.help);
+  commandMap.set("setdone", commands.setDone);
+  commandMap.set("setundone", commands.setUndone);
+  commandMap.set("config", commands.config);
+  commandMap.set("reminder", commands.reminder);
   return commandMap;
 }
 

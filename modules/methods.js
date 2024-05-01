@@ -43,7 +43,7 @@ function getDate(date) {
  * Checks if the given date matches any of the configured reminder times.
  *
  * @param {Date} date - The date to check.
- * @returns {Array<string, boolean>} - An array containing the current date and a boolean indicating if it matches any reminder time.
+ * @returns {Promise<Array<T>>} - An array containing the current date and a boolean indicating if it matches any reminder time.
  */
 async function isReminderTime(date) {
   const [today, currentHour, currentMinute] = getDate(date);
@@ -70,7 +70,6 @@ async function isReminderTime(date) {
         recordatories.push(reminder);
     }
   }
-
   return [
     today,
     recordatories.some(({ hour, minute }) =>
