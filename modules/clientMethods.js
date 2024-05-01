@@ -118,12 +118,12 @@ async function sendReminders(client, guildID, today) {
  * @param {import('discord.js').Interaction} interaction - The interaction object representing the command.
  * @returns {void}
  */
-async function commandHandling(client, interaction) {
+function commandHandling(client, interaction) {
   let { commandName, options } = interaction;
   const botCommands = botCommandsMap(client);
   commandName = commandName.toLowerCase();
   if (!botCommands.has(commandName)) return;
-  await botCommands.get(commandName)(interaction, options);
+  botCommands.get(commandName)(interaction, options);
 }
 module.exports = {
   reminder,

@@ -22,7 +22,7 @@ function interactionCreate(client) {
     console.log("Interaction received.")
     console.log(interaction.isCommand())
     if (!interaction.isCommand()) return;
-    await commandHandling(client, interaction);
+    commandHandling(client, interaction);
   };
 }
 
@@ -42,7 +42,7 @@ function ready(client) {
     client.channels.cache.get("1230190057684734124").send({ embeds: [embed] });
     setInterval(async () => {
       let date = new Date();
-      let [today, condition] = await isReminderTime(date);
+      let [today, condition] = isReminderTime(date);
       await changeStatus(client);
       await reminder(client, today, condition);
     }, 60000);
