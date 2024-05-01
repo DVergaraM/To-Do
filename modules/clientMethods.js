@@ -12,7 +12,6 @@ const { getGuilds, getChannel, getUser } = require("./requests/others");
  */
 function botCommandsMap(client) {
   const commands = new Commands(client);
-  console.log(commands.repr());
   return new Map([
     ["add", commands.addTask.bind(commands)],
     ["list", commands.listTasks.bind(commands)],
@@ -122,8 +121,9 @@ function commandHandling(client, interaction) {
   let { commandName, options } = interaction;
   const botCommands = botCommandsMap(client);
   commandName = commandName.toLowerCase();
-  if (!botCommands.has(commandName)) return;
-  botCommands.get(commandName)(interaction, options);
+  if (!botCommands.has(commandName)) return; 
+  let f = botCommands.get(commandName);
+  f(interaction, options);
 }
 module.exports = {
   reminder,
