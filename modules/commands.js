@@ -53,6 +53,7 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves once the task is added.
    */
   async addTask(interaction, options) {
+    await interaction.deferReply();
     let due_date = options.getString("date");
     let task = options.getString("task");
     console.log(`Running addTask(${task}, ${due_date})`);
@@ -65,7 +66,7 @@ class Commands {
       language["add"],
       this.client
     );
-    await interaction.reply(message, {});
+    await interaction.editReply(message, {});
     console.log(`Task added: ${task}`);
     return;
   }
@@ -78,6 +79,7 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves when the tasks are listed.
    */
   async listTasks(interaction, options) {
+    await interaction.deferReply();
     const status = options.getString("status");
     console.log(`Running listTasks(${status})`);
     const lang = await getLanguageById(interaction.guild.id);
@@ -93,7 +95,7 @@ class Commands {
         .get("1230190057684734124")
         .send({ embeds: [embed] });
       console.error("Invalid language data:", lang?.language);
-      await interaction.reply({ content: "Invalid language data." });
+      await interaction.editReply({ content: "Invalid language data." });
       return;
     }
     let tasks = await getTasksByUser(interaction.user.id);
@@ -109,7 +111,7 @@ class Commands {
       await interaction.client.channels.cache
         .get("1230190057684734124")
         .send({ embeds: [embed] });
-      await interaction.reply({ content: lang.language.no_tasks });
+      await interaction.editReply({ content: lang.language.no_tasks });
       return;
     }
 
@@ -133,7 +135,7 @@ class Commands {
     );
     const message = status ? mess : lang.language.list.replace("{0}", taskList);
 
-    await interaction.reply({ content: message });
+    await interaction.editReply({ content: message });
     console.log(`Tasks listed`);
     return;
   }
@@ -146,7 +148,8 @@ class Commands {
    */
 
   ping = async (interaction, _) => {
-    await interaction.reply(this.client.ws.ping + "ms", { ephemeral: true });
+    await interaction.deferReply();
+    await interaction.editReply(this.client.ws.ping + "ms", { ephemeral: true });
     console.log(`Ping: ${this.client.ws.ping}ms`);
     return;
   };
@@ -158,7 +161,7 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves when the help message is sent.
    */
   help = async (interaction, _) => {
-    // const lang = await getLanguageById(interaction.guild.id);
+    await interaction.deferReply();
     let embed = new EmbedBuilder();
     embed.setTitle("Commands");
     embed.setColor("Green");
@@ -170,7 +173,7 @@ class Commands {
         value: command.description,
       });
     });
-    await interaction.reply({ embeds: [embed], ephemeral: false });
+    await interaction.editReply({ embeds: [embed], ephemeral: false });
     console.log(`Help message sent`);
   };
 
@@ -182,12 +185,13 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves once the task is deleted.
    */
   async deleteTask(interaction, options) {
+    await interaction.deferReply();
     let taskDelete = parseInt(options.getString("id"));
     console.log(`Running deleteTask(${taskDelete})`);
     let lang = await getLanguageById(interaction.guild.id);
     await deleteTaskAPI(interaction.user.id, taskDelete);
     let message = lang.language.deleteTask.replace("{0}", taskDelete);
-    await interaction.reply(message, {});
+    await interaction.editReply(message, {});
     console.log(`Task deleted: ${taskDelete}`);
     return;
   }
@@ -199,12 +203,13 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves when the task is set as done.
    */
   async setDone(interaction, options) {
+    await interaction.deferReply();
     let taskId = parseInt(options.getString("id"));
     console.log(`Running setDone(${taskId})`);
     let lang = await getLanguageById(interaction.guild.id);
     await updateTask(interaction.user.id, taskId, "true");
     let message = lang.language.setDone.replace("{0}", taskId);
-    await interaction.reply(message, {});
+    await interaction.editReply(message, {});
     console.log(`Task set as done: ${taskId}`);
     return;
   }
@@ -217,12 +222,13 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves when the task is set as undone.
    */
   async setUndone(interaction, options) {
+    await interaction.deferReply();
     let taskId = parseInt(options.getString("id"));
     console.log(`Running setUndone(${taskId})`);
     let lang = await getLanguageById(interaction.guild.id);
     await updateTask(interaction.user.id, taskId, "false");
     let message = lang.language.setUndone.replace("{0}", taskId);
-    await interaction.reply(message, {});
+    await interaction.editReply(message, {});
     console.log(`Task set as undone: ${taskId}`);
     return;
   }
@@ -237,13 +243,13 @@ class Commands {
   async config(interaction, options) {
     let command = options.getSubcommand();
     let lang = await getLanguageById(interaction.guild.id);
-
+    await interaction.deferReply();
     if (interaction.user.id !== interaction.guild.ownerId) {
       let embed = new EmbedBuilder();
       embed.setTitle("Config");
       embed.setColor("Red");
       embed.setDescription(lang.language.ownerError);
-      await interaction.reply({ embeds: [embed] });
+      await interaction.editReply({ embeds: [embed] });
       return;
     }
     switch (command) {
@@ -259,11 +265,11 @@ class Commands {
             lang.language.getConfig,
             this.client
           );
-          await interaction.reply(response, {});
+          await interaction.editReply(response, {});
           return;
         } catch (e) {
           console.error(e);
-          await interaction.reply(lang.language.configError, {});
+          await interaction.editReply(lang.language.configError, {});
           return;
         }
       case "set":
@@ -277,7 +283,7 @@ class Commands {
 
         if (channel || user || language) {
           updateConfig(interaction.guild.id, channel, user, language);
-          await interaction.reply(lang.language.saved, {});
+          await interaction.editReply(lang.language.saved, {});
           return;
         } else {
           let embed = new EmbedBuilder();
@@ -287,12 +293,12 @@ class Commands {
           await this.client.channels.cache
             .get("1230190057684734124")
             .send({ embeds: [embed] });
-          await interaction.reply(lang.language.saveError, {});
+          await interaction.editReply(lang.language.saveError, {});
           return;
         }
       case "reset":
         updateConfig(interaction.guild.id, "", "", "en");
-        await interaction.reply(lang.language.configReset, {});
+        await interaction.editReply(lang.language.configReset, {});
         return;
     }
   }
@@ -315,6 +321,7 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves when the reminder command is handled.
    */
   reminder = async (interaction, options) => {
+    await interaction.deferReply();
     let command = options.getSubcommand();
     let lang = await getLanguageById(interaction.guild.id);
 
@@ -337,24 +344,24 @@ class Commands {
           await this.client.channels.cache
             .get("1230190057684734124")
             .send({ embeds: [embed] });
-          await interaction.reply(lang.language.noReminders, {});
+          await interaction.editReply(lang.language.noReminders, {});
           return;
         }
         let messageList = lang.language.reminderList.replace(
           "{0}",
           reminderList
         );
-        await interaction.reply(messageList, {});
+        await interaction.editReply(messageList, {});
         return;
       case "add":
         let time = options.getString("time");
         let [hour, minute] = time.split(":");
         let rValue = await addReminder(interaction.user.id, hour, minute);
         if (rValue["error"]) {
-          await interaction.reply(lang.language.reminderError, {});
+          await interaction.editReply(lang.language.reminderError, {});
           return;
         }
-        await interaction.reply(lang.language.addReminder, {});
+        await interaction.editReply(lang.language.addReminder, {});
         return;
       case "delete":
         let reminderID = options.getString("id");
@@ -365,14 +372,14 @@ class Commands {
           await this.client.channels.cache
             .get("1230190057684734124")
             .send({ embeds: [embed] });
-          await interaction.reply(reValue["error"], {});
+          await interaction.editReply(reValue["error"], {});
           return;
         } else {
-          await interaction.reply(lang.language.removeReminder, {});
+          await interaction.editReply(lang.language.removeReminder, {});
           return;
         }
       default:
-        await interaction.reply(lang.language.reminderCommands, {});
+        await interaction.editReply(lang.language.reminderCommands, {});
         return;
     }
   };

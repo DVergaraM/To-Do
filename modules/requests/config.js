@@ -32,13 +32,14 @@ async function getConfig(guildID) {
   });
 }
 
+
 /**
- * Updates the configuration settings for a guild.
+ * Updates the configuration for a guild.
  * @param {string} guildID - The ID of the guild.
- * @param {string} channelID - The ID of the channel.
- * @param {string} userID - The ID of the user.
- * @param {string} language - The language setting.
- * @returns {Map<string, any>} - The updated configuration object.
+ * @param {string} channelID - The ID of the channel (optional).
+ * @param {string} userID - The ID of the user (optional).
+ * @param {string} language - The language code (optional).
+ * @returns {Object} - The updated configuration object.
  */
 async function updateConfig(guildID, channelID, userID, language) {
   let url = `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`;
