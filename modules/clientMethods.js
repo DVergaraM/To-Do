@@ -1,28 +1,27 @@
 const { Client, EmbedBuilder } = require("discord.js");
-const Commands = require("./commands.js");
+const { Commands, Command } = require("./commands.js");
 const { getLanguage } = require("./requests/language");
 const { deleteTask, getTasksByGuild } = require("./requests/task");
 const { getGuilds, getChannel, getUser } = require("./requests/others");
 
+const commandMap = new Command();
 /**
  * Creates a map of bot commands.
- *
  * @param {Client} client - The Discord client object.
- * @returns {Map<string, Function>}  - A map of bot commands.
+ * @returns {Command} - An object containing mapped bot commands.
  */
 function botCommandsMap(client) {
   const commands = new Commands(client);
-  return new Map([
-    ["add", commands.addTask.bind(commands)],
-    ["list", commands.listTasks.bind(commands)],
-    ["ping", commands.ping.bind(commands)],
-    ["delete", commands.deleteTask.bind(commands)],
-    ["help", commands.help.bind(commands)],
-    ["setdone", commands.setDone.bind(commands)],
-    ["setundone", commands.setUndone.bind(commands)],
-    ["config", commands.config.bind(commands)],
-    ["reminder", commands.reminder.bind(commands)],
-  ]);
+  commandMap.set("add", commands.addTask.bind(commands));
+  commandMap.set("list", commands.listTasks.bind(commands));
+  commandMap.set("ping", commands.ping.bind(commands));
+  commandMap.set("delete", commands.deleteTask.bind(commands));
+  commandMap.set("help", commands.help.bind(commands));
+  commandMap.set("setdone", commands.setDone.bind(commands));
+  commandMap.set("setundone", commands.setUndone.bind(commands));
+  commandMap.set("config", commands.config.bind(commands));
+  commandMap.set("reminder", commands.reminder.bind(commands));
+  return commandMap;
 }
 
 /**
@@ -121,9 +120,9 @@ function commandHandling(client, interaction) {
   let { commandName, options } = interaction;
   const botCommands = botCommandsMap(client);
   commandName = commandName.toLowerCase();
-  if (!botCommands.has(commandName)) return; 
-  let f = botCommands.get(commandName);
-  f(interaction, options);
+  if (!botCommands.has(commandName)) return;
+  console.log("Command received:", commandName)
+  botCommands.execute(commandName, interaction, options);
 }
 module.exports = {
   reminder,
