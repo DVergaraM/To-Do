@@ -27,7 +27,7 @@ function interactionCreate(client) {
  */
 function ready(client) {
   return async () => {
-    createCommands(client);
+    //createCommands(client);
     console.log("Bot is ready.");
     let embed = new EmbedBuilder();
     embed.setColor("DarkAqua");

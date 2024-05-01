@@ -55,6 +55,7 @@ class Commands {
   async addTask(interaction, options) {
     let due_date = options.getString("date");
     let task = options.getString("task");
+    console.log(`Running addTask(${task}, ${due_date})`);
     let lang = await getLanguageById(interaction.guild.id);
     const { language } = lang || {};
     await addTaskAPI(interaction.user.id, interaction.guild.id, task, due_date);
@@ -65,6 +66,7 @@ class Commands {
       this.client
     );
     await interaction.reply(message, {});
+    console.log(`Task added: ${task}`);
     return;
   }
 
@@ -77,6 +79,7 @@ class Commands {
    */
   async listTasks(interaction, options) {
     const status = options.getString("status");
+    console.log(`Running listTasks(${status})`);
     const lang = await getLanguageById(interaction.guild.id);
     let embed = new EmbedBuilder();
     embed.setTitle("Commands");
@@ -131,6 +134,7 @@ class Commands {
     const message = status ? mess : lang.language.list.replace("{0}", taskList);
 
     await interaction.reply({ content: message });
+    console.log(`Tasks listed`);
     return;
   }
 
@@ -143,6 +147,7 @@ class Commands {
 
   ping = async (interaction, _) => {
     await interaction.reply(this.client.ws.ping + "ms", { ephemeral: true });
+    console.log(`Ping: ${this.client.ws.ping}ms`);
     return;
   };
 
@@ -166,6 +171,7 @@ class Commands {
       });
     });
     await interaction.reply({ embeds: [embed], ephemeral: false });
+    console.log(`Help message sent`);
   };
 
   /**
@@ -176,11 +182,13 @@ class Commands {
    * @returns {Promise<void>} - A promise that resolves once the task is deleted.
    */
   async deleteTask(interaction, options) {
-    let taskDelete = options.getString("id");
+    let taskDelete = parseInt(options.getString("id"));
+    console.log(`Running deleteTask(${taskDelete})`);
     let lang = await getLanguageById(interaction.guild.id);
     await deleteTaskAPI(interaction.user.id, taskDelete);
     let message = lang.language.deleteTask.replace("{0}", taskDelete);
     await interaction.reply(message, {});
+    console.log(`Task deleted: ${taskDelete}`);
     return;
   }
 
@@ -192,10 +200,12 @@ class Commands {
    */
   async setDone(interaction, options) {
     let taskId = parseInt(options.getString("id"));
+    console.log(`Running setDone(${taskId})`);
     let lang = await getLanguageById(interaction.guild.id);
     await updateTask(interaction.user.id, taskId, "true");
     let message = lang.language.setDone.replace("{0}", taskId);
     await interaction.reply(message, {});
+    console.log(`Task set as done: ${taskId}`);
     return;
   }
 
@@ -208,10 +218,12 @@ class Commands {
    */
   async setUndone(interaction, options) {
     let taskId = parseInt(options.getString("id"));
+    console.log(`Running setUndone(${taskId})`);
     let lang = await getLanguageById(interaction.guild.id);
     await updateTask(interaction.user.id, taskId, "false");
     let message = lang.language.setUndone.replace("{0}", taskId);
     await interaction.reply(message, {});
+    console.log(`Task set as undone: ${taskId}`);
     return;
   }
 
