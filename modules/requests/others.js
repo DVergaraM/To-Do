@@ -1,9 +1,9 @@
 const request = require("request");
-const { ApplicationCommandOptionType, Client } = require("discord.js");
+const { ApplicationCommandOptionType } = require("discord.js");
 /**
  * Deletes a global command from the Discord application.
  *
- * @param {import('discord.js').Client} client - The Discord client instance.
+ * @param {import('../client').MyClient} client - The Discord client instance.
  * @param {string} commandName - The name of the command to delete.
  * @returns {Promise<void>} - A promise that resolves when the command is deleted.
  */
@@ -26,16 +26,22 @@ async function deleteGlobalCommand(client, commandName) {
 
 /**
  *
- * @param {Client} client
+ * @param {import('../client').MyClient} client
  */
 async function deleteCommands(client) {
   const commands = await client.application.commands.fetch();
   commands.forEach(async (command) => {
+    console.log(`Deleting command: ${command.name}`)
     await client.application.commands.delete(command.id);
   });
   console.log("Commands deleted");
 }
 
+/**
+ * Deletes other commands from the Discord application.
+ * @param {import('../client').MyClient} client - The Discord client instance.
+ * @returns {Promise<void>} - A promise that resolves when the commands are deleted.
+ */
 async function deleteOtherCommands(client) {
   const commands = await client.application.commands.fetch();
   commands.forEach(async (command) => {
@@ -58,7 +64,7 @@ async function deleteOtherCommands(client) {
 
 /**
  *
- * @param {Client} client
+ * @param {import('../client').MyClient} client
  */
 async function createCommands(client) {
   // add

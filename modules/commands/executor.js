@@ -1,48 +1,46 @@
 const {
-  Client,
   CommandInteractionOptionResolver: Options,
   EmbedBuilder,
 } = require("discord.js");
 
-const { getLanguageById } = require("./requests/language");
+const { getLanguageById } = require("../requests/language");
 const {
   addTask: addTaskAPI,
   deleteTaskByUser: deleteTaskAPI,
   updateTask,
   getTasksByUser,
-} = require("./requests/task");
-const { getConfig, updateConfig } = require("./requests/config");
+} = require("../requests/task");
+const { getConfig, updateConfig } = require("../requests/config");
 const {
   getReminders,
   addReminder,
   deleteReminder,
-} = require("./requests/reminder");
+} = require("../requests/reminder");
+const { multipleReplaceForLanguage } = require("../methods");
 
-const { multipleReplaceForLanguage } = require("./methods");
-
-class Commands {
+class CommandExecutor {
   /**
-   * Creates a new instance of the Commands class.
-   * @param {Client} client - The Discord client instance.
+   * Creates a new instance of the CommandExecutor class.
+   * @param {MyClient} client - The Discord client instance.
    */
   constructor(client) {
     this.client = client;
   }
 
   /**
-   * Returns a string representing the Commands class instance.
-   * @returns {string} A string representing the Commands class instance.
+   * Returns a string representing the CommandExecutor class instance.
+   * @returns {string} A string representing the CommandExecutor class instance.
    */
   string() {
-    return `Commands class instance for ${this.client.user.tag}`;
+    return `CommandExecutor class instance for ${this.client.user.tag}`;
   }
 
   /**
-   * Returns a string representation of the Commands object.
-   * @returns {string} The string representation of the Commands object.
+   * Returns a string representation of the CommandExecutor object.
+   * @returns {string} The string representation of the CommandExecutor object.
    */
   repr() {
-    return `Commands(${this.client.user.tag})`;
+    return `CommandExecutor(${this.client.user.tag})`;
   }
 
   /**
@@ -84,7 +82,7 @@ class Commands {
     console.log(`Running listTasks(${status})`);
     const lang = await getLanguageById(interaction.guild.id);
     let embed = new EmbedBuilder();
-    embed.setTitle("Commands");
+    embed.setTitle("CommandExecutor");
 
     if (!lang?.language?.list_status) {
       embed.setColor("Red");
@@ -149,7 +147,9 @@ class Commands {
 
   ping = async (interaction, _) => {
     await interaction.deferReply();
-    await interaction.editReply(this.client.ws.ping + "ms", { ephemeral: true });
+    await interaction.editReply(this.client.ws.ping + "ms", {
+      ephemeral: true,
+    });
     console.log(`Ping: ${this.client.ws.ping}ms`);
     return;
   };
@@ -163,7 +163,7 @@ class Commands {
   help = async (interaction, _) => {
     await interaction.deferReply();
     let embed = new EmbedBuilder();
-    embed.setTitle("Commands");
+    embed.setTitle("CommandExecutor");
     embed.setColor("Green");
 
     let commands = await this.client.application.commands.fetch();
@@ -385,134 +385,4 @@ class Commands {
   };
 }
 
-/**
- * Represents a command object.
- */
-class Command {
-  /**
-   * Creates a new command object.
-   */
-  constructor() {
-    this.commands = new Map();
-  }
-
-  /**
-   * Checks if a command exists.
-   * @param {string} command - The command to check.
-   * @returns {boolean} - A boolean indicating if the command exists.
-   */
-  has(command) {
-    return this.commands.has(command);
-  }
-
-  /**
-   * Gets a command.
-   * @param {string} command - The command to get.
-   * @returns {Function} - The command function.
-   */
-  get(command) {
-    return this.commands.get(command);
-  }
-
-  /**
-   * Sets a command.
-   * @param {string} command - The command to set.
-   * @param {Function} func - The function to set.
-   * @returns {void}
-   */
-  set(command, func) {
-    this.commands.set(command, func);
-  }
-
-  [Symbol.iterator]() {
-    return this.commands.entries();
-  }
-
-  /**
-   * Returns the number of commands.
-   * @returns {number} - The number of commands.
-   */
-  get size() {
-    return this.commands.size;
-  }
-
-  /**
-   * Deletes a command.
-   * @param {string} command - The command to delete.
-   * @returns {boolean} - A boolean indicating if the command was deleted.
-   */
-  delete(command) {
-    return this.commands.delete(command);
-  }
-
-  /**
-   * Clears all commands.
-   * @returns {void}
-   */
-  clear() {
-    this.commands.clear();
-  }
-
-  /**
-   * Executes a command.
-   * @param {string} command - The command to execute.
-   * @param {import('discord.js').Interaction} interaction - The interaction object.
-   * @param {import('discord.js').CommandInteractionOptionResolver} options - The options object.
-   * @returns {void}
-   */
-
-  execute(command, interaction, options) {
-    this.get(command)(interaction, options);
-  }
-
-  /**
-   * Returns the commands.
-   * @returns {Map<string, Function>} - The commands.
-   */
-  getCommands() {
-    return this.commands;
-  }
-
-  /**
-   * Returns the command names.
-   * @returns {string[]} - The command names.
-   */
-
-  getCommandNames() {
-    return [...this.commands.keys()];
-  }
-
-  /**
-   * Returns the command functions.
-   * @returns {Function[]} - The command functions.
-   */
-  getCommandFunctions() {
-    return [...this.commands.values()];
-  }
-
-  /**
-   * Returns the command entries.
-   * @returns {IterableIterator<[string, Function]>} - The command entries.
-   */
-  getCommandEntries() {
-    return this.commands.entries();
-  }
-
-  /**
-   * Returns the command keys.
-   * @returns {IterableIterator<string>} - The command keys.
-   */
-  getCommandKeys() {
-    return this.commands.keys();
-  }
-  /**
-   * Returns the command values.
-   * @returns {IterableIterator<Function>} - The command values.
-   * @returns {void}
-   */
-  getCommandValues() {
-    return this.commands.values();
-  }
-}
-
-module.exports = {Commands, Command};
+module.exports = CommandExecutor;
