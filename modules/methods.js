@@ -167,8 +167,52 @@ function multipleReplaceForLanguage(toReplace, replaceWith, text, client) {
   return text;
 }
 
+/**
+ * Runs the client based on the specified mode.
+ * 
+ * @param {import('../modules/client').MyClient} client - The Discord client object.
+ * @param {import('readline').Interface} rl - The readline interface object.
+ * @param {string} mode - The mode to run the client in ("prod" or "dev").
+ */
+function run(client, rl, mode) {
+  if (mode == "prod") {
+    let started = false;
+    rl.on("line", (input) => {
+      let args = input.split(" ");
+      let command = args[0];
+      if (command == "stop" && started) {
+        client.stop();
+      } else if (command == "start") {
+        started = true;
+        client.start(true);
+        client.login(process.env["prodToken"]);
+      } else if (command === "start" && args[1] == "true" && !started) {
+        started = true;
+        client.start(true);
+        client.login(process.env["prodToken"]);
+      } else if (command === "start" && args[1] == "false" && !started) {
+        started = true;
+        client.start(false);
+        client.login(process.env["prodToken"]);
+      } else if (command === "delete" && started) {
+        client.commands(false);
+      } else if (command === "create") {
+        client.commands(true);
+      } else {
+        console.log("Invalid command.");
+      }
+    });
+  } else if (mode == "dev") {
+    client.start(true);
+    client.login(process.env["token"]);
+  } else {
+    console.log("Invalid mode.");
+  }
+}
+
 module.exports = {
   isReminderTime,
   changeStatus,
   multipleReplaceForLanguage,
+  run
 };
