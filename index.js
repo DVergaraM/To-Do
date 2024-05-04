@@ -12,4 +12,4 @@ require("dotenv").config();
 keepAlive(app, 3000);
 const client = new ToDoClient();
 
-run(client, rl,  "dev")
+run(client, rl,  process.env["mode"])
