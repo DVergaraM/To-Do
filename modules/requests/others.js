@@ -141,12 +141,12 @@ async function createCommands(client) {
   });
   // set undone
   client.application.commands.create({
-    name: "setundone",
-    description: "Mark a task as undone",
+    name: "setpending",
+    description: "Mark a task as pending",
     options: [
       {
         name: "id",
-        description: "The ID of the task to mark as undone",
+        description: "The ID of the task to mark as pending",
         type: ApplicationCommandOptionType.String,
         required: true,
       },
@@ -232,7 +232,17 @@ async function createCommands(client) {
       },
     ],
   });
-  console.log("Commands created");
+  client.application.commands.create({
+    name: "faq",
+    description: "Frequently asked questions",
+  })
+
+  client.application.commands.fetch().then((commands) => {
+    console.log("Commands created");
+    commands.forEach((command) => {
+      console.log(command.name);
+    });
+  });
 }
 
 /**

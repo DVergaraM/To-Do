@@ -1,9 +1,9 @@
 /**
- * Represents a command object.
+ * Represents a command manager.
  */
 class CommandManager {
   /**
-   * Creates a new command object.
+   * Represents a command manager.
    */
   constructor() {
     this.commands = new Map();

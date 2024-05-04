@@ -21,7 +21,7 @@ const { multipleReplaceForLanguage } = require("../methods");
 class CommandExecutor {
   /**
    * Creates a new instance of the CommandExecutor class.
-   * @param {MyClient} client - The Discord client instance.
+   * @param {import('../client').ToDoClient} client - The Discord client instance.
    */
   constructor(client) {
     this.client = client;
@@ -163,7 +163,7 @@ class CommandExecutor {
   help = async (interaction, _) => {
     await interaction.deferReply();
     let embed = new EmbedBuilder();
-    embed.setTitle("CommandExecutor");
+    embed.setTitle("Help");
     embed.setColor("Green");
 
     let commands = await this.client.application.commands.fetch();
@@ -221,15 +221,15 @@ class CommandExecutor {
    * @param {Options} options - The options object containing the task ID.
    * @returns {Promise<void>} - A promise that resolves when the task is set as undone.
    */
-  async setUndone(interaction, options) {
+  async setPending(interaction, options) {
     await interaction.deferReply();
     let taskId = parseInt(options.getString("id"));
-    console.log(`Running setUndone(${taskId})`);
+    console.log(`Running setPending(${taskId})`);
     let lang = await getLanguageById(interaction.guild.id);
     await updateTask(interaction.user.id, taskId, "false");
     let message = lang.language.setUndone.replace("{0}", taskId);
     await interaction.editReply(message, {});
-    console.log(`Task set as undone: ${taskId}`);
+    console.log(`Task set as pending: ${taskId}`);
     return;
   }
 
@@ -383,6 +383,59 @@ class CommandExecutor {
         return;
     }
   };
+
+  async faq(interaction, _options) {
+    await interaction.deferReply();
+
+    const embed = new EmbedBuilder();
+    embed.setTitle("FAQ");
+    embed.setColor("Green");
+    embed.addFields(
+      {
+        name: "How do I add a task?",
+        value:
+          "You can add a task by using the `/add` command.\nWith the parameters `task` and `date`.",
+      },
+      {
+        name: "How do I list my tasks?",
+        value:
+          "You can list your tasks by using the `/list` command.\nWith the parameter `status`.",
+      },
+      {
+        name: "How do I delete a task?",
+        value:
+          "You can delete a task by using the `/delete` command.\nWith the parameter `id`.",
+      },
+      {
+        name: "How do I set a task as done?",
+        value:
+          "You can set a task as done by using the `/setdone` command.\nWith the parameter `id`.",
+      },
+      {
+        name: "How do I set a task as pending?",
+        value:
+          "You can set a task as pending by using the `/setpending` command.\nWith the parameter `id`.",
+      },
+      {
+        name: "How do I set a reminder?",
+        value:
+          "You can set a reminder by using the `/reminder` command.\nWith the parameters `add`, `delete`, and `list`.",
+      },
+      {
+        name: "How do I configure the bot?",
+        value:
+          "You can configure the bot by using the `/config` command.\nWith the parameters `get`, `set`, and `reset`.",
+      }
+    );
+    embed.setFooter({
+      text: "For more information, visit the GitHub repository.",
+    });
+    embed.setTimestamp();
+    embed.setAuthor({
+      name: "To-Do Bot",
+    });
+    await interaction.editReply({ embeds: [embed] });
+  }
 }
 
 module.exports = CommandExecutor;

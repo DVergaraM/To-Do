@@ -35,14 +35,15 @@ class ToDoClient extends Client {
     this.commandManager.set("help", this.commandExecutor.help.bind(this));
     this.commandManager.set("setdone", this.commandExecutor.setDone.bind(this));
     this.commandManager.set(
-      "setundone",
-      this.commandExecutor.setUndone.bind(this)
+      "setpending",
+      this.commandExecutor.setPending.bind(this)
     );
     this.commandManager.set("config", this.commandExecutor.config.bind(this));
     this.commandManager.set(
       "reminder",
       this.commandExecutor.reminder.bind(this)
     );
+    this.commandManager.set("faq", this.commandExecutor.faq.bind(this));
   }
 
   /**
