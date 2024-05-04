@@ -26,7 +26,7 @@ async function deleteGlobalCommand(client, commandName) {
 
 /**
  *
- * @param {import('../client').MyClient} client
+ * @param {import('../client').ToDoClient} client
  */
 async function deleteCommands(client) {
   const commands = await client.application.commands.fetch();
@@ -237,12 +237,7 @@ async function createCommands(client) {
     description: "Frequently asked questions",
   })
 
-  client.application.commands.fetch().then((commands) => {
-    console.log("Commands created");
-    commands.forEach((command) => {
-      console.log(command.name);
-    });
-  });
+  console.log("Commands created");
 }
 
 /**
