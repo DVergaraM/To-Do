@@ -14,14 +14,15 @@ const {
 const { getTasksByGuild, deleteTask } = require("./requests/task");
 const { createConfig, deleteConfig } = require("./requests/config");
 
-class MyClient extends Client {
+class ToDoClient extends Client {
   /**
-   * Represents the client constructor.
+   * Represents the client object.
    * @constructor
-   * @param {GatewayIntentBits[]} options - The options for the client.
    */
-  constructor(options) {
-    super(options);
+  constructor() {
+    super({
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+    });
     this.commandExecutor = new CommandExecutor(this);
     this.commandManager = new CommandManager();
     this.commandManager.set("add", this.commandExecutor.addTask.bind(this));
@@ -44,11 +45,11 @@ class MyClient extends Client {
     );
   }
 
-/**
- * Starts the bot and sets up event listeners for interaction commands, ready event, guild create event, and guild delete event.
- * @param {boolean} sure - A boolean value indicating whether the bot should start.
- * @returns {Promise<void>} A promise that resolves once the bot is ready.
- */
+  /**
+   * Starts the bot and sets up event listeners for interaction commands, ready event, guild create event, and guild delete event.
+   * @param {boolean} sure - A boolean value indicating whether the bot should start.
+   * @returns {Promise<void>} A promise that resolves once the bot is ready.
+   */
   async start(sure) {
     this.on("interactionCreate", async (interaction) => {
       if (!interaction.isCommand()) return;
@@ -198,4 +199,4 @@ class MyClient extends Client {
   }
 }
 
-module.exports = { MyClient };
+module.exports = { ToDoClient };

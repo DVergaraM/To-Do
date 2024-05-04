@@ -1,6 +1,4 @@
-const { GatewayIntentBits } = require("discord.js");
-const { MyClient } = require("./modules/client");
-require("dotenv").config();
+const { ToDoClient } = require("./modules/client");
 const { keepAlive } = require("./modules/keepAlive");
 const { run } = require("./modules/methods");
 const app = require("express")();
@@ -9,10 +7,9 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+require("dotenv").config();
 
 keepAlive(app, 3000);
-const client = new MyClient({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
-});
+const client = new ToDoClient();
 
-run(client, rl,  mode)
+run(client, rl,  "dev")
