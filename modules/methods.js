@@ -26,13 +26,8 @@ function addZerosToMinutes(minutes) {
   return `${minutes}`;
 }
 
-/**
- * Checks if the given minute is "00".
- * @param {string} minute - The minute value to check.
- * @returns {boolean} - Returns true if the minute is "00", otherwise false.
- */
 function isOClock(minute) {
-  return minute === "00";
+  return minute === "00"
 }
 
 /**
@@ -107,9 +102,17 @@ function isReminderTimeMatch(
   currentMinute
 ) {
   return (
-    (reminderHour === currentHour && isOClock(reminderHour, reminderMinute)) ||
-    (reminderHour === currentHour + 1 &&
-      isOClock(reminderHour, reminderMinute - 59))
+    (reminderHour === currentHour && reminderMinute === currentMinute) ||
+    (reminderHour === currentHour + 1 && reminderMinute === currentMinute - 59) ||
+    (reminderHour === currentHour - 1 && reminderMinute === currentMinute + 59) ||
+    (isOClock(reminderMinute) && reminderHour === currentHour - 1 && currentMinute === 59) ||
+    (isOClock(reminderMinute) && reminderHour === currentHour + 1 && currentMinute === 0) ||
+    (isOClock(currentMinute) && reminderHour === currentHour && reminderMinute === 59) ||
+    (isOClock(currentMinute) && reminderHour === currentHour + 1 && reminderMinute === 0) ||
+    (isOClock(currentMinute) && reminderHour === currentHour - 1 && reminderMinute === 59) || 
+    (isOClock(currentMinute) && reminderHour === currentHour && reminderMinute === 0) || 
+    (isOClock(reminderMinute) && reminderHour === currentHour && currentMinute === 59) ||
+    (isOClock(reminderMinute) && reminderHour === currentHour && currentMinute === 0)
   );
 }
 
@@ -179,7 +182,7 @@ function multipleReplaceForLanguage(toReplace, replaceWith, text, client) {
 
 /**
  * Runs the client based on the specified mode.
- *
+ * 
  * @param {import('../modules/client').ToDoClient} client - The Discord client object.
  * @param {import('readline').Interface} rl - The readline interface object.
  * @param {string} mode - The mode to run the client in ("prod" or "dev").
@@ -225,5 +228,5 @@ module.exports = {
   isReminderTime,
   changeStatus,
   multipleReplaceForLanguage,
-  run,
+  run
 };
