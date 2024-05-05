@@ -27,6 +27,15 @@ function addZerosToMinutes(minutes) {
 }
 
 /**
+ * Checks if the given minute is "00".
+ * @param {string} minute - The minute value to check.
+ * @returns {boolean} - Returns true if the minute is "00", otherwise false.
+ */
+function isOClock(minute) {
+  return minute === "00";
+}
+
+/**
  * Get the date, local hour, and UTC minutes.
  * @param {Date} date - The date object.
  * @returns {Array<string, number>} - An array containing the date, local hour, and UTC minutes.
@@ -98,8 +107,9 @@ function isReminderTimeMatch(
   currentMinute
 ) {
   return (
-    (reminderHour === currentHour && reminderMinute === currentMinute) ||
-    (reminderHour === currentHour + 1 && reminderMinute === currentMinute - 59)
+    (reminderHour === currentHour && isOClock(reminderHour, reminderMinute)) ||
+    (reminderHour === currentHour + 1 &&
+      isOClock(reminderHour, reminderMinute - 59))
   );
 }
 
@@ -169,7 +179,7 @@ function multipleReplaceForLanguage(toReplace, replaceWith, text, client) {
 
 /**
  * Runs the client based on the specified mode.
- * 
+ *
  * @param {import('../modules/client').ToDoClient} client - The Discord client object.
  * @param {import('readline').Interface} rl - The readline interface object.
  * @param {string} mode - The mode to run the client in ("prod" or "dev").
@@ -215,5 +225,5 @@ module.exports = {
   isReminderTime,
   changeStatus,
   multipleReplaceForLanguage,
-  run
+  run,
 };
