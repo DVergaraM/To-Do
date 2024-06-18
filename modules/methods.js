@@ -220,7 +220,7 @@ function run(client, rl, mode) {
     client.start(true);
     client.login(process.env["prodToken"]);
   } else {
-    console.log("Invalid mode.");
+    console.log("Invalid mode, please use \"prod\" or \"dev\"");
   }
 }
 
