@@ -188,7 +188,7 @@ function multipleReplaceForLanguage(toReplace, replaceWith, text, client) {
  * @param {string} mode - The mode to run the client in ("prod" or "dev").
  */
 function run(client, rl, mode) {
-  if (mode == "prod") {
+  if (mode == "dev") {
     let started = false;
     rl.on("line", (input) => {
       let args = input.split(" ");
@@ -216,7 +216,7 @@ function run(client, rl, mode) {
         console.log("Invalid command.");
       }
     });
-  } else if (mode == "dev") {
+  } else if (mode == "prod") {
     client.start(true);
     client.login(process.env["token"]);
   } else {
