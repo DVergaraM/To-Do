@@ -199,15 +199,15 @@ function run(client, rl, mode) {
       } else if (command == "start") {
         started = true;
         client.start(true);
-        client.login(process.env["prodToken"]);
+        client.login(process.env["token"]);
       } else if (command === "start" && args[1] == "true" && !started) {
         started = true;
         client.start(true);
-        client.login(process.env["prodToken"]);
+        client.login(process.env["token"]);
       } else if (command === "start" && args[1] == "false" && !started) {
         started = true;
         client.start(false);
-        client.login(process.env["prodToken"]);
+        client.login(process.env["token"]);
       } else if (command === "delete" && started) {
         client.commands(false);
       } else if (command === "create" && started) {
@@ -218,7 +218,7 @@ function run(client, rl, mode) {
     });
   } else if (mode == "prod") {
     client.start(true);
-    client.login(process.env["token"]);
+    client.login(process.env["prodToken"]);
   } else {
     console.log("Invalid mode.");
   }
