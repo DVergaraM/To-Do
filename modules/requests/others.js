@@ -3,7 +3,7 @@ const { ApplicationCommandOptionType } = require("discord.js");
 /**
  * Deletes a global command from the Discord application.
  *
- * @param {import('../client').MyClient} client - The Discord client instance.
+ * @param {import('../client').ToDoClient} client - The Discord client instance.
  * @param {string} commandName - The name of the command to delete.
  * @returns {Promise<void>} - A promise that resolves when the command is deleted.
  */
@@ -39,7 +39,7 @@ async function deleteCommands(client) {
 
 /**
  * Deletes other commands from the Discord application.
- * @param {import('../client').MyClient} client - The Discord client instance.
+ * @param {import('../client').ToDoClient} client - The Discord client instance.
  * @returns {Promise<void>} - A promise that resolves when the commands are deleted.
  */
 async function deleteOtherCommands(client) {
@@ -52,7 +52,7 @@ async function deleteOtherCommands(client) {
       command.name !== "ping" &&
       command.name !== "help" &&
       command.name !== "setdone" &&
-      command.name !== "setundone" &&
+      command.name !== "setpending" &&
       command.name !== "config" &&
       command.name !== "reminder"
     ) {
@@ -64,7 +64,7 @@ async function deleteOtherCommands(client) {
 
 /**
  *
- * @param {import('../client').MyClient} client
+ * @param {import('../client').ToDoClient} client
  */
 async function createCommands(client) {
   // add
