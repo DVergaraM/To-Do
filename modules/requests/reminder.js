@@ -1,5 +1,4 @@
-const request = require("request");
-;
+const axios = require("axios");
 
 /**
  * Retrieves reminders for a given user ID.
@@ -7,27 +6,17 @@ const request = require("request");
  * @returns {Promise<Array>} - A promise that resolves to an array of reminders.
  */
 async function getReminders(userID) {
-  return new Promise((resolve, reject) => {
-    let url = `https://to-do-api-pqi0.onrender.com/reminders`;
-    if (userID != "") {
-      url += `?userID=${userID}`;
-    }
-    request(
-      {
-        url: url,
-        method: "GET",
-        json: true,
-      },
-      (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        resolve(body);
-      }
-    );
-  });
+  let url = `https://to-do-api-pqi0.onrender.com/reminders`;
+  if (userID !== "") {
+    url += `?userID=${userID}`;
+  }
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 /**
@@ -38,28 +27,17 @@ async function getReminders(userID) {
  * @returns {Promise<any>} - A promise that resolves with the response body.
  */
 async function addReminder(userID, hour, minute) {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: `https://to-do-api-pqi0.onrender.com/reminders/`,
-        method: "POST",
-        json: true,
-        body: {
-          userID: userID,
-          hour: hour,
-          minute: minute,
-        },
-      },
-      (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        resolve(body);
-      }
-    );
-  });
+  try {
+    const response = await axios.post(`https://to-do-api-pqi0.onrender.com/reminders/`, {
+      userID,
+      hour,
+      minute,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 /**
@@ -69,32 +47,18 @@ async function addReminder(userID, hour, minute) {
  * @returns {Promise<any>} - A promise that resolves with the response body if successful, or rejects with an error if unsuccessful.
  */
 async function deleteReminder(userID, reminderID) {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: `https://to-do-api-pqi0.onrender.com/reminders/`,
-        method: "DELETE",
-        json: true,
-        body: {
-          userID: userID,
-          id: reminderID,
-        },
+  try {
+    const response = await axios.delete(`https://to-do-api-pqi0.onrender.com/reminders/`, {
+      data: {
+        userID,
+        id: reminderID,
       },
-      (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        if (body.error) {
-          resolve(body);
-          return;
-        }
-        resolve(body);
-        return;
-      }
-    );
-  });
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 module.exports = {

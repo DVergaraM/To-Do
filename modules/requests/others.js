@@ -1,4 +1,4 @@
-const request = require("request");
+const axios = require("axios");
 const { ApplicationCommandOptionType } = require("discord.js");
 /**
  * Deletes a global command from the Discord application.
@@ -31,7 +31,7 @@ async function deleteGlobalCommand(client, commandName) {
 async function deleteCommands(client) {
   const commands = await client.application.commands.fetch();
   commands.forEach(async (command) => {
-    console.log(`Deleting command: ${command.name}`)
+    console.log(`Deleting command: ${command.name}`);
     await client.application.commands.delete(command.id);
   });
   console.log("Commands deleted");
@@ -235,7 +235,7 @@ async function createCommands(client) {
   client.application.commands.create({
     name: "faq",
     description: "Frequently asked questions",
-  })
+  });
 
   console.log("Commands created");
 }
@@ -245,22 +245,15 @@ async function createCommands(client) {
  * @returns {Promise<Array>} A promise that resolves to an array of user objects.
  */
 async function getUsers() {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: `https://to-do-api-pqi0.onrender.com/users/`,
-        json: true,
-      },
-      (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        resolve(body);
-      }
+  try {
+    const response = await axios.get(
+      `https://to-do-api-pqi0.onrender.com/users/`
     );
-  });
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 /**
@@ -270,32 +263,25 @@ async function getUsers() {
  * @throws {Error} - If there is an error retrieving the user data or if the data is invalid.
  */
 async function getUser(guildID) {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`,
-        json: true,
-      },
-      async (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        if (!body || !body.guildID) {
-          console.error("Invalid user data:", body);
-          reject(new Error("Invalid user data"));
-          return;
-        }
-        let newBody = {
-          code: 200,
-          guildID: body.guildID,
-          userID: body.userID || "No userID provided",
-        };
-        resolve(newBody);
-      }
+  try {
+    const response = await axios.get(
+      `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`
     );
-  });
+    const body = response.data;
+    if (!body || !body.guildID) {
+      console.error("Invalid user data:", body);
+      throw new Error("Invalid user data");
+    }
+    let newBody = {
+      code: 200,
+      guildID: body.guildID,
+      userID: body.userID || "No userID provided",
+    };
+    return newBody;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 /**
@@ -305,55 +291,41 @@ async function getUser(guildID) {
  * @throws {Error} - If there is an error retrieving the channel data or if the data is invalid.
  */
 async function getChannel(guildID) {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`,
-        json: true,
-      },
-      async (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        if (!body || !body.guildID || !body.channelID) {
-          console.error("Invalid channel data:", body);
-          reject(new Error("Invalid channel data"));
-          return;
-        }
-        let newBody = {
-          code: 200,
-          guildID: body.guildID,
-          channelID: body.channelID,
-        };
-        resolve(newBody);
-      }
+  try {
+    const response = await axios.get(
+      `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`
     );
-  });
+    const body = response.data;
+    if (!body || !body.guildID || !body.channelID) {
+      console.error("Invalid channel data:", body);
+      throw new Error("Invalid channel data");
+    }
+    let newBody = {
+      code: 200,
+      guildID: body.guildID,
+      channelID: body.channelID,
+    };
+    return newBody;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 /**
  * Retrieves the list of guilds from the server.
- * @returns {Promise<Array>} A promise that resolves to an array of guilds.
+ * @returns {Promise<Any>} A promise that resolves to an array of guilds.
  */
 async function getGuilds() {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: `https://to-do-api-pqi0.onrender.com/config/guilds`,
-        json: true,
-      },
-      (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        resolve(body);
-      }
+  try {
+    const response = await axios.get(
+      `https://to-do-api-pqi0.onrender.com/config/guilds`
     );
-  });
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
 }
 
 module.exports = {

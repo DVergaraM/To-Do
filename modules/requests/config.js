@@ -1,37 +1,29 @@
-const request = require("request");
-;
+const axios = require("axios");
 
 /**
  * Retrieves the configuration for a guild.
  * @param {string} guildID - The ID of the guild.
- * @returns {Promise<Map<string, any>>} - A promise that resolves with the guild configuration.
+ * @returns {Promise<Object>} - A promise that resolves with the guild configuration.
  */
 async function getConfig(guildID) {
-  return new Promise((resolve, reject) => {
-    request(
-      {
-        url: `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`,
-        json: true,
-      },
-      (err, _res, body) => {
-        if (err) {
-          console.error("Error:", err);
-          reject(err);
-          return;
-        }
-        let newBody = {
-          code: body.code,
-          guildID: body.guildID,
-          channelID: body.channelID,
-          userID: body.userID,
-          language: body.language,
-        };
-        resolve(newBody);
-      }
+  try {
+    const response = await axios.get(
+      `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`
     );
-  });
+    const body = response.data;
+    let newBody = {
+      code: body.code,
+      guildID: body.guildID,
+      channelID: body.channelID,
+      userID: body.userID,
+      language: body.language,
+    };
+    return newBody;
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
 }
-
 
 /**
  * Updates the configuration for a guild.
@@ -39,67 +31,50 @@ async function getConfig(guildID) {
  * @param {string} channelID - The ID of the channel (optional).
  * @param {string} userID - The ID of the user (optional).
  * @param {string} language - The language code (optional).
- * @returns {Object} - The updated configuration object.
+ * @returns {Promise<Object>} - The updated configuration object.
  */
-async function updateConfig(guildID, channelID, userID, language) {
-  let url = `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`;
-
-  if (channelID !== "") {
-    url += `&channelID=${channelID}`;
+async function updateConfig(
+  guildID,
+  channelID = "",
+  userID = "",
+  language = ""
+) {
+  try {
+    const response = await axios.put(
+      `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}&channelID=${channelID}&userID=${userID}&language=${language}`
+    );
+    const body = response.data;
+    let newBody = {
+      code: body.code,
+      message: body.message,
+    };
+    return newBody;
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
   }
-
-  if (userID !== "") {
-    url += `&userID=${userID}`;
-  }
-
-  if (language !== "") {
-    url += `&language=${language}`;
-  }
-
-  request(
-    {
-      url: url,
-      method: "PUT",
-      json: true,
-    },
-    (err, _res, body) => {
-      if (err) {
-        console.error("Error:", err);
-        return;
-      }
-      let newBody = {
-        code: body.code,
-        message: body.message,
-      };
-      return newBody;
-    }
-  );
 }
 
 /**
  * Deletes the configuration for a guild.
  * @param {string} guildID - The ID of the guild.
- * @returns {Map<String, any>} - The response body containing the code and message.
+ * @returns {Promise<Object>} - The response body containing the code and message.
  */
-function deleteConfig(guildID) {
-  request(
-    {
-      url: `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`,
-      method: "DELETE",
-      json: true,
-    },
-    (err, _res, body) => {
-      if (err) {
-        console.error("Error:", err);
-        return;
-      }
-      let newBody = {
-        code: body.code,
-        message: body.message,
-      };
-      return newBody;
-    }
-  );
+async function deleteConfig(guildID) {
+  try {
+    const response = await axios.delete(
+      `https://to-do-api-pqi0.onrender.com/config?guildID=${guildID}`
+    );
+    const body = response.data;
+    let newBody = {
+      code: body.code,
+      message: body.message,
+    };
+    return newBody;
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
 }
 
 /**
@@ -108,31 +83,27 @@ function deleteConfig(guildID) {
  * @param {string} channelID - The ID of the channel.
  * @param {string} userID - The ID of the user.
  * @param {string} language - The language to be set in the configuration.
- * @returns {Map<string, any>} - The response body containing the code and message.
+ * @returns {Promise<Object>} - The response body containing the code and message.
  */
-function createConfig(guildID) {
-  request(
-    {
-      url: `https://to-do-api-pqi0.onrender.com/config/`,
-      method: "POST",
-      json: true,
-      body: {
+async function createConfig(guildID) {
+  try {
+    const response = await axios.post(
+      `https://to-do-api-pqi0.onrender.com/config/`,
+      {
         guildID: guildID,
         language: "en",
-      },
-    },
-    (err, _res, body) => {
-      if (err) {
-        console.error("Error:", err);
-        return;
       }
-      let newBody = {
-        code: body.code,
-        message: body.message,
-      };
-      return newBody;
-    }
-  );
+    );
+    const body = response.data;
+    let newBody = {
+      code: body.code,
+      message: body.message,
+    };
+    return newBody;
+  } catch (err) {
+    console.error("Error:", err);
+    throw err;
+  }
 }
 
 module.exports = {
