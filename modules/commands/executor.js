@@ -384,6 +384,12 @@ class CommandExecutor {
     }
   };
 
+  /**
+   * Sends an FAQ message as an embed in response to an interaction.
+   * @param {import("discord.js").Interaction} interaction - The interaction object.
+   * @param {Options} _options - Additional options (not used in this function).
+   * @returns {Promise<void>} - A promise that resolves when the message is sent.
+   */
   async faq(interaction, _options) {
     await interaction.deferReply();
 

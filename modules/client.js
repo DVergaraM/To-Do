@@ -14,6 +14,9 @@ const {
 const { getTasksByGuild, deleteTask } = require("./requests/task");
 const { createConfig, deleteConfig } = require("./requests/config");
 
+/**
+ * Represents a ToDoClient object that extends the Client class from Discord.js.
+ */
 class ToDoClient extends Client {
   /**
    * Represents the client object.
@@ -200,4 +203,4 @@ class ToDoClient extends Client {
   }
 }
 
-module.exports = { ToDoClient };
+module.exports = ToDoClient;
